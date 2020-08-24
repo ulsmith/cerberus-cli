@@ -21,15 +21,19 @@ export default class Help {
 	 * @return {Object} Object of access levels for methods
 	 */
 	static run(args, actions, action) {
+		let cache = [];
+
 		console.log('')
 		console.log('HELP')
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 		for (const key in actions) {
+			if (cache.indexOf(actions[key].title) >= 0) continue;
 			console.log(actions[key].title);
 			console.log(actions[key].description);
 			console.log(actions[key].command);
 			console.log(actions[key].arguments);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			cache.push(actions[key].title);
 		}
 		console.log('')
 	}

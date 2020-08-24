@@ -4,9 +4,14 @@
 
 import Help from './src/Help.mjs';
 import Init from './src/Init.mjs';
+import Tools from './src/Tools.mjs';
 // import Migration from './src/Migration.mjs';
 
 const actions = {
+	'-v': Tools,
+	'--version': Tools,
+	'-h': Help,
+	'--help': Help,
 	Help,
 	Init
 };

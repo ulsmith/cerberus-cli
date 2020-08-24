@@ -27,7 +27,7 @@ export default class Init {
 	static run() {
 		console.log('');
 		console.log('======================================');
-		console.log(`INITIALISE`);
+		console.log(`CerberusCLI - Init`);
 		console.log('======================================');
 
 		return Init.meta()
