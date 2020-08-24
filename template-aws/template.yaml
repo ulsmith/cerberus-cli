@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion : '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: cerberus-mvc-<meta.name>
+
+Globals:
+  Api:
+    Cors:
+      AllowMethods: "'GET, POST, PUT, DELETE, OPTIONS, PATCH'"
+      AllowHeaders: "'Accept, Cache-Control, Content-Type, Content-Length, Authorization, Pragma, Expires'"
+      AllowOrigin: "'*'"
+      AllowCredentials: "'*'"
+  Function:
+    Timeout: 3
+    Runtime: nodejs12.x
+    Handler: handler.run
+    Environment:
+      Variables:
+        API_NAME: <meta.title>
+        API_VERSION: 0.0.1
+        API_MODE: development
+        API_CORS_LIST: 'http://localhost:8181' 
+        
+Resources:
+  Health:
+    Type: AWS::Serverless::Function
+    Properties:
+      ReservedConcurrentExecutions: 10
+      Timeout: 30
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-0......1
+        SubnetIds:
+          - subnet-0......1
+          - subnet-0......2
+      Events:
+        HealthGet:
+          Type: Api
+          Properties:
+            Path: /health
+            Method: get
+
+  CatchAll:
+    Type: AWS::Serverless::Function
+    Properties:
+      ReservedConcurrentExecutions: 10
+      Timeout: 30
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-0......1
+        SubnetIds:
+          - subnet-0......1
+          - subnet-0......2
+      ReservedConcurrentExecutions: 10
+      Events:
+        CatchAll:
+          Type: Api
+          Properties:
+            Path: /{error+}
+            Method: any
+

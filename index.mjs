@@ -2,8 +2,19 @@
 
 // npm install -g ./
 
-import Test from './src/Test.mjs';
+import Help from './src/Help.mjs';
+import Init from './src/Init.mjs';
+// import Migration from './src/Migration.mjs';
 
-console.log(process.argv);
+const actions = {
+	Help,
+	Init
+};
 
-console.log(Test.test());
+// get arguments
+const args = process.argv;
+const action = (args[2] || 'help').toLowerCase().replace(/^\w/g, (m) => m[0].toUpperCase());
+
+// run function
+if (!actions[action]) console.log(`\nInvalid action '${action}', try 'help' action for action list.\n`);
+else actions[action].run(args, actions, action);

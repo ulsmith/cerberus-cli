@@ -1,0 +1,21 @@
+{
+	"name": "cerberus-mvc",
+	"version": "0.0.1",
+	"description": "A cerberus MVC stack API",
+	"author": "Paul Smith",
+	"license": "MIT",
+	"private": true,
+	"scripts": {
+		"start": "sam local start-api --host 0.0.0.0 --template template.yaml",
+		"serve": "sam local start-api --skip-pull-image --host 0.0.0.0 --template template.yaml",
+		"swagger:up": "docker-compose up -d && echo 'access @ http://localhost:8181'",
+		"swagger:down": "docker-compose down"
+	},
+	"dependencies": {
+		"cerberus-mvc": "^0.0.2"
+	},
+	"devDependencies": {},
+	"engines": {
+		"node": ">=13.0"
+	}
+}

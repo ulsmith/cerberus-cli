@@ -1,0 +1,12 @@
+version: "3"
+services:
+  swagger-<meta.name>:
+    image: swaggerapi/swagger-ui
+    environment:
+      - SWAGGER_JSON=/mnt/swagger.json
+    networks:
+      - default
+    volumes:
+      - ${PWD}/swagger.json:/mnt/swagger.json
+    ports:
+      - 8181:8080

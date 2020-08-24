@@ -1,20 +1,19 @@
 {
 	"name": "cerberus-cli",
-	"version": "0.0.1",
-	"description": "CLI tool for cerberus-mvc",
+	"version": "0.0.2",
+	"description": "CLI tool for cerberus-mvc, generates new projects and other functions",
 	"author": "Paul Smith",
 	"license": "MIT",
 	"main": "./index.mjs",
 	"bin": {
-		"generic-cli": "./index.mjs"
-	},
-	"scripts": {
-		"migration:production": "SERVER=production node src/Migration/migration.mjs"
+		"cerberus-cli": "./index.mjs"
 	},
 	"dependencies": {
+		"fs-extra": "^9.0.1",
+		"replace-in-file": "^6.1.0"
 	},
 	"devDependencies": {},
 	"engines": {
-		"node": ">=13.0"
+		"node": ">=12.0"
 	}
 }
