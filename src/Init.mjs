@@ -49,6 +49,8 @@ export default class Init {
 				console.log(`npm run serve > starts MVC server and skips checks for updated image`);
 				console.log(`npm run swagger:up > starts swagger server`);
 				console.log(`npm run swagger:down > stops swagger server`);
+				console.log(`npm run package > package up system ready for deploy (supported stack types only)`);
+				console.log(`npm run deploy > deploy package to production (supported stack types only)`);
 				console.log('======================================');
 				console.log('');
 			})
@@ -136,6 +138,7 @@ export default class Init {
 				data.author = meta.author;
 				data.license = meta.license;
 				data.private = !!meta.private;
+				data.scripts.deploy = data.scripts.deploy.replace('<meta.name>', meta.name);
 				return data;
 			})
 			.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/package.json', data, { spaces: '\t' }))

@@ -16,6 +16,7 @@ Globals:
     Environment:
       Variables:
         API_NAME: <meta.title>
+        API_ADDRESS: 'http://localhost:3000'
         API_VERSION: 0.0.1
         API_MODE: development
         API_CORS_LIST: 'http://localhost:8181' 

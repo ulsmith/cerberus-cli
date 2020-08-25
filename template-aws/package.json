@@ -8,6 +8,8 @@
 	"scripts": {
 		"start": "sam local start-api --host 0.0.0.0 --template template.yaml",
 		"serve": "sam local start-api --skip-pull-image --host 0.0.0.0 --template template.yaml",
+		"package": "sam package --template-file template.yaml --s3-bucket cloudformation-build --output-template-file packaged.template.yaml",
+		"deploy": "sam deploy --template-file packaged.template.yaml --stack-name <meta.name>-api --capabilities CAPABILITY_IAM --region eu-west-2",
 		"swagger:up": "docker-compose up -d && echo 'access @ http://localhost:8181'",
 		"swagger:down": "docker-compose down"
 	},
