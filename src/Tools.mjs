@@ -1,14 +1,9 @@
-import readline from 'readline';
-import fs from 'fs';
 import fsx from 'fs-extra';
-import replace from 'replace-in-file';
-import { exec } from 'child_process';
 
 /**
- * @namespace API/Controller/Account
- * @class Activate
- * @extends Controller
- * @description Controller class exposing methods over the routed endpoint
+ * @namespace CLI
+ * @class Tools
+ * @description Basic tools that do not belong to its own class
  * @author Paul Smith (ulsmith) <p@ulsmith.net> <pa.ulsmith.net>
  * @copyright 2020 Paul Smith (ulsmith) all rights reserved
  * @license MIT
@@ -22,9 +17,12 @@ export default class Tools {
 
 	/**
 	 * @public @static run
-	 * @desciption Start process
+	 * @desciption Perform action from command
+	 * @param {Array} args Arguments passed in to command
+	 * @param {Object} actions All actions for CLI
+	 * @param {String} action The action chosen on CLI
 	 */
-	static run(args) {
+	static run() {
 		console.log('');
 		console.log('======================================');
 		console.log(`CerberusCLI - Tools`);
@@ -41,7 +39,6 @@ export default class Tools {
 	/**
 	 * @public @static packageJSON
 	 * @desciption Get package data
-	 * @param {Object} meta Meta data object
 	 * @return {Object} Meta data object
 	 */
 	static packageJSON() {

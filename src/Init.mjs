@@ -5,10 +5,9 @@ import replace from 'replace-in-file';
 import { exec } from 'child_process';
 
 /**
- * @namespace API/Controller/Account
- * @class Activate
- * @extends Controller
- * @description Controller class exposing methods over the routed endpoint
+ * @namespace CLI
+ * @class Init
+ * @description Project initialisation
  * @author Paul Smith (ulsmith) <p@ulsmith.net> <pa.ulsmith.net>
  * @copyright 2020 Paul Smith (ulsmith) all rights reserved
  * @license MIT
@@ -22,7 +21,10 @@ export default class Init {
 
 	/**
 	 * @public @static run
-	 * @desciption Start process
+	 * @desciption Perform action from command
+	 * @param {Array} args Arguments passed in to command
+	 * @param {Object} actions All actions for CLI
+	 * @param {String} action The action chosen on CLI
 	 */
 	static run() {
 		console.log('');

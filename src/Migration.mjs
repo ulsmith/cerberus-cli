@@ -1,40 +1,44 @@
 import fs from 'fs';
 import Knex from 'knex';
 
-// what context are we running against
-const server = process.env.SERVER;
-
-// DATABASES
-
-var databases;
-try {
-	let dbFileData = fs.readFileSync(`./migration${server ? '.' + server : ''}.json`);
-	databases = JSON.parse(dbFileData);
-} catch (error) {
-	console.log('');
-	console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-	console.log('ERROR PARSING MIGRATION DATABASE FILE');
-	console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-	console.log(error.message);
-	console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-	console.log('');
-}
-
-// sort out args
-if (!process.argv || (process.argv.length < 3)) throw ('Please specify a migration task [prepare/up/down]... `node migration -- prepare`... `node migration -- up xyz`');
-const task = process.argv[2];
-const dbname = process.argv[3] && !/[0-9]{12,20}/.test(process.argv[3]) && process.argv[3].indexOf('I_WANT_TO_DESTROY_DATABASES') < 0 ? process.argv[3] : undefined;
-const migration = dbname ? (/[0-9]{12,20}/.test(process.argv[4]) ? process.argv[4] : undefined) : (/[0-9]{12,20}/.test(process.argv[3]) ? process.argv[3] : undefined);
-const imBonkersYesNuts = dbname && migration ? process.argv[5] : (dbname || migration ? process.argv[4] : process.argv[3]);
-
 /**
+ * @namespace CLI
  * @class Migration
- * @description Migration multiple databases in one go. Runs from a untracked migration.json files to specify database connections
+ * @description Migration tool to perform migrations on database/s, import data and more
  * @author Paul Smith (ulsmith) <p@ulsmith.net> <pa.ulsmith.net>
  * @copyright 2020 Paul Smith (ulsmith) all rights reserved
  * @license MIT
  */
-class Migration {
+export default class Migration {
+
+	static get title() { return 'Migration' }
+	static get description() { return 'perform migrations on database/s, manage updates to database/s and perform actions such as loading data. Run task against default config or set a server to choose different server config' }
+	static get command() { return 'cerberus-cli migration [task] --argument value' }
+	// static get tasks() { return ['health', 'list', 'parse', 'up', 'down'] }
+	static get tasks() { return ['health'] }
+	static get arguments() { return ['--server production', '--database dbname', '--migration 1234567891234', '--code 1234567891234', '--file ./folder/file.sql'] }
+
+	/**
+	 * @public @static run
+	 * @desciption Perform action from command
+	 * @param {Array} args Arguments passed in to command
+	 * @param {Object} actions All actions for CLI
+	 * @param {String} action The action chosen on CLI
+	 */
+	static run(args) {
+		// check task
+		if (args.length < 4 || args[3].indexOf('-') === 0) return console.log(`\nYou must provide a task to perform e.g. 'cerberus-cli migration up'\n`);
+		const task = args[3];
+		if (!Migration[task]) return console.log(`\nTask is not recognised. Run 'cerberus-cli --help' to list tasks\n`);
+
+		// grab any flags
+		let flags = {};
+		args.reduce((p, c) => { if (p && p.indexOf('-') === 0) flags[p.replace(/--|-/, '').charAt(0)] = c; return c; });
+
+		// process
+		return Migration[task](flags);
+	}
+
 	static _connect(database) {
 		return new Knex({ client: database.engine, connection: database });
 	}
@@ -42,20 +46,27 @@ class Migration {
 	/**
 	 * @public @method health
 	 * @description Check database health
-	 * @param {String} migration The migration name to use e.g. testing, production
-	 * @param {String} dbname The database name to check e.g. mydatabase
+	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
-	static async health(migration, dbname) {
+	static async health(flags) {
 		console.log('');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-		console.log('HEALTH' + (dbname ? ' FOR ' + dbname : ''));
+		console.log('HEALTH' + (flags.d ? ' FOR ' + flags.d : ''));
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		console.log('');
 
-		if (dbname && !databases.find((db) => db.database === dbname)) console.log('UKNOWN DATABASE ' + dbname);
+		// get database files
+		let file;
+		let databases = [];
+		try {
+			file = flags.f ? (flags.f.charAt(0) === '/' || flags.f.charAt(0) === '\\' ? flags.f : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.f) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
+			let dbFileData = fs.readFileSync(file);
+			databases = JSON.parse(dbFileData);
+		} catch (e) { return console.log(`UKNOWN CONFIG ${file}\n`) }
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${file}\n`);
 
 		for await (const database of databases) {
-			if (dbname && dbname !== database.database) continue;
+			if (flags.d && flags.d !== database.database) continue;
 			let db = Migration._connect(database);
 
 			// test connection with a query
@@ -97,21 +108,20 @@ class Migration {
 	/**
 	 * @public @method list
 	 * @description List all migrations
-	 * @param {String} migration The migration name to use e.g. testing, production
-	 * @param {String} dbname The database name to check e.g. mydatabase
+	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
-	static async list(migration, dbname) {
+	static async list(flags) {
 		console.log('');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-		console.log('LIST' + (dbname ? ' FOR ' + dbname : ''));
+		console.log('LIST' + (flags.d ? ' FOR ' + flags.d : ''));
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		console.log('');
 
-		if (dbname && !databases.find((db) => db.database === dbname)) console.log('UKNOWN DATABASE ' + dbname);
+		if (flags.d && !databases.find((db) => db.database === flags.d)) console.log('UKNOWN DATABASE ' + flags.d);
 		let files = Migration._getFilesToMigration('./migration');
 
 		for await (const database of databases) {
-			if (dbname && dbname !== database.database) continue;
+			if (flags.d && flags.d !== database.database) continue;
 
 			// connect DB
 			let db = Migration._connect(database);
@@ -190,8 +200,9 @@ class Migration {
 	/**
 	 * @public @method prepare
 	 * @description Prepare any migrations by checking and marging and renaming
+	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
-	static prepare() {
+	static prepare(flags) {
 		let files = Migration._getFilesToPrepare('./migration');
 		let timestamp = Date.now();
 
@@ -258,24 +269,19 @@ class Migration {
 	/**
 	 * @public @method parse
 	 * @description Parse a specific SQL file, handy when wanting to pre set data in a new database
-	 * @param {String} migration The migration name to use e.g. testing, production
-	 * @param {String} dbname The database name to check e.g. mydatabase
+	 * @param {Object} flags The migration flags to process e.g. { f: '', s: ''}
 	 */
-	static async parse(migration, dbname) {
-		if (dbname && !databases.find((db) => db.database === dbname)) {
+	static async parse(flags) {
+		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('UKNOWN DATABASE ' + dbname);
+			console.log('UKNOWN DATABASE ' + flags.d);
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('');
 		}
 
-		// get all prepared migrations
-		migration = dbname ? process.argv[4] : process.argv[3];
-		let file = migration;
-
 		for await (const database of databases) {
-			if (dbname && dbname !== database.database) continue;
+			if (flags.d && flags.d !== database.database) continue;
 
 			// connect DB
 			let db = Migration._connect(database);
@@ -286,7 +292,7 @@ class Migration {
 			console.log('');
 
 			// check file not ran against db
-			const fd = fs.readFileSync(file, 'utf8');
+			const fd = fs.readFileSync(flags.f, 'utf8');
 			const fdMeta = fd.split('-- @parse')[0];
 			const fdParse = fd.split('-- @parse')[1];
 
@@ -295,31 +301,28 @@ class Migration {
 			try {
 				dbName = fdMeta.match("-- @database (.*)")[1];
 				mgName = fdMeta.match("-- @name (.*)")[1];
-				if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
+				if (!database.database) throw Error('Cannot resolve database name in file [' + flags.f + ']');
 				if (database.database !== dbName) throw Error('Cannot parse SQL against "' + database.database + '" database name in file is "' + dbName + '"');
-				if (!mgName) throw Error('Cannot resolve migration name in file [' + file + ']');
+				if (!mgName) throw Error('Cannot resolve migration name in file [' + flags.f + ']');
 			} catch (error) {
 				if (!dbName || !mgName) console.log('Meta data missing from parsable file');
 				else if (error.message) console.log(error.message);
-				throw Error('Undefined error'); // only allow from or to with dbname
+				throw Error('Undefined error'); // only allow from or to with flags.d
 			}
 			
-			// migration search
-			if (migration) {
-				// check basic
-				if (!dbname) {
-					console.log('');
-					console.log('Must use database name with specific migrations');
-					console.log('');
-					throw Error(); // only allow from or to with dbname
-				}
+			// check basic
+			if (!flags.d) {
+				console.log('');
+				console.log('Must use database name with specific migrations');
+				console.log('');
+				throw Error(); // only allow from or to with flags.d
+			}
 
-				try {
-					await db.raw(fdParse);
-					console.log('...Completed PARSE of SQL file [' + file + ']');
-				} catch (error) {
-					console.log('Error with message: ' + error.message);
-				}
+			try {
+				await db.raw(fdParse);
+				console.log('...Completed PARSE of SQL file [' + flags.f + ']');
+			} catch (error) {
+				console.log('Error with message: ' + error.message);
 			}
 
 			await db.destroy();
@@ -335,14 +338,13 @@ class Migration {
 	/**
 	 * @public @method up
 	 * @description Bring all prepared migrations up
-	 * @param {String} migration The migration name to use e.g. testing, production
-	 * @param {String} dbname The database name to check e.g. mydatabase
+	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
-	static async up(migration, dbname) {
-		if (dbname && !databases.find((db) => db.database === dbname)) {
+	static async up(flags) {
+		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('UKNOWN DATABASE ' + dbname);
+			console.log('UKNOWN DATABASE ' + flags.d);
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('');
 		}
@@ -351,7 +353,7 @@ class Migration {
 		let files = Migration._getFilesToMigration('./migration');
 
 		for await (const database of databases) {
-			if (dbname && dbname !== database.database) continue;
+			if (flags.d && flags.d !== database.database) continue;
 
 			// connect DB
 			let db = Migration._connect(database);
@@ -386,17 +388,17 @@ class Migration {
 					}
 
 					// migration search
-					if (migration) {
+					if (flags.m) {
 						// check basic
-						if (!dbname) {
+						if (!flags.d) {
 							console.log('');
 							console.log('Must use database name with specific migrations');
 							console.log('');
-							throw Error(); // only allow from or to with dbname
+							throw Error(); // only allow from or to with flags.d
 						}
 
 						// only do single migration
-						const migs = migration.split(':');
+						const migs = flags.m.split(':');
 						let from = migs[0];
 						let to = migs[1];
 
@@ -452,14 +454,13 @@ class Migration {
 	/**
 	 * @public @method down
 	 * @description Bring all prepared migrations down
-	 * @param {String} migration The migration name to use e.g. testing, production
-	 * @param {String} dbname The database name to check e.g. mydatabase
+	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
-	static async down(migration, dbname, imBonkersYesNuts) {
-		if (dbname && !databases.find((db) => db.database === dbname)) {
+	static async down(flags) {
+		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('UKNOWN DATABASE ' + dbname);
+			console.log('UKNOWN DATABASE ' + flags.d);
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('');
 		}
@@ -467,13 +468,13 @@ class Migration {
 		// get all prepared migrations
 		let files = Migration._getFilesToMigration('./migration').reverse();
 
-		if (!imBonkersYesNuts) {
+		if (!flags.c) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('DOWN MIGRATION!!! ARE YOU SURE?');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('');
-			console.log('Are you sure you want to destory ' + (migration ? 'migration "' + migration + '" ' : '') + (dbname ? '"' + dbname + '" database.' : 'ALL databases.'));
+			console.log('Are you sure you want to destory ' + (flags.m ? 'migration "' + flags.m + '" ' : '') + (flags.d ? '"' + flags.d + '" database.' : 'ALL databases.'));
 			console.log('Choosing DOWN on database/s will revert them completely, ALL DATA WILL BE LOST!');
 			console.log('');
 			console.log('Add this code to the end of your down command to enable down for 10 sec.');
@@ -483,7 +484,7 @@ class Migration {
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('');
 			return;
-		} else if (Number(imBonkersYesNuts.replace('I_WANT_TO_DESTROY_DATABASES_', '')) >= Math.round(Date.now() / 1000)) {
+		} else if (Number(flags.c.replace('I_WANT_TO_DESTROY_DATABASES_', '')) >= Math.round(Date.now() / 1000)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			console.log('CODE ACCEPTED...');
@@ -499,7 +500,7 @@ class Migration {
 		}
 
 		for await (const database of databases) {
-			if (dbname && dbname !== database.database) continue;
+			if (flags.d && flags.d !== database.database) continue;
 
 			// connect DB
 			let db = Migration._connect(database);
@@ -533,17 +534,17 @@ class Migration {
 					}
 
 					// migration search
-					if (migration) {
+					if (flags.m) {
 						// check basic
-						if (!dbname) {
+						if (!flags.d) {
 							console.log('');
 							console.log('Must use database name with specific migrations');
 							console.log('');
-							throw Error(); // only allow from or to with dbname
+							throw Error(); // only allow from or to with flags.d
 						}
 
 						// only do single migration
-						const migs = migration.split(':');
+						const migs = flags.m.split(':');
 						let from = migs[0];
 						let to = migs[1];
 
@@ -620,9 +621,3 @@ class Migration {
 	}
 }
 
-// expose class to self run on file run
-if (!Migration[task]) {
-	console.log('');
-	console.log('UNKOWN ACTION, please use health, list, up or down with migrate tool.');
-	console.log('');
-} else if (databases) Migration[task](migration, dbname, imBonkersYesNuts);

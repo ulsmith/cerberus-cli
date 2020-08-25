@@ -1,9 +1,8 @@
 
 /**
- * @namespace API/Controller/Account
- * @class Activate
- * @extends Controller
- * @description Controller class exposing methods over the routed endpoint
+ * @namespace CLI
+ * @class Help
+ * @description List help from each class
  * @author Paul Smith (ulsmith) <p@ulsmith.net> <pa.ulsmith.net>
  * @copyright 2020 Paul Smith (ulsmith) all rights reserved
  * @license MIT
@@ -17,8 +16,10 @@ export default class Help {
 
 	/**
 	 * @public @static run
-	 * @desciption Get the access level for the post method. All methods are restricted by default.
-	 * @return {Object} Object of access levels for methods
+	 * @desciption Perform action from command
+	 * @param {Array} args Arguments passed in to command
+	 * @param {Object} actions All actions for CLI
+	 * @param {String} action The action chosen on CLI
 	 */
 	static run(args, actions, action) {
 		let cache = [];
@@ -31,7 +32,8 @@ export default class Help {
 			console.log(actions[key].title);
 			console.log(actions[key].description);
 			console.log(actions[key].command);
-			console.log(actions[key].arguments);
+			if (actions[key].tasks) console.log(actions[key].tasks);
+			if (actions[key].arguments) console.log(actions[key].arguments);
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 			cache.push(actions[key].title);
 		}
