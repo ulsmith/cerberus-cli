@@ -1,5 +1,6 @@
 import fs from 'fs';
 import Knex from 'knex';
+import readline from 'readline';
 
 /**
  * @namespace CLI
@@ -14,9 +15,8 @@ export default class Migration {
 	static get title() { return 'Migration' }
 	static get description() { return 'perform migrations on database/s, manage updates to database/s and perform actions such as loading data. Run task against default config or set a server to choose different server config' }
 	static get command() { return 'cerberus-cli migration [task] --argument value' }
-	// static get tasks() { return ['parse', 'up', 'down'] }
-	static get tasks() { return ['health', 'list', 'prepare'] }
-	static get arguments() { return ['--server production', '--database dbname', '--migration 1234567891234', '--code 1234567891234', '--file ./folder/file.sql'] }
+	static get tasks() { return ['health', 'list', 'prepare', 'parse', 'up', 'down'] }
+	static get arguments() { return ['--server production', '--database dbname', '--migration 1234567891234', '--config ./folder/manifest.json', '--file ./folder/file.sql'] }
 
 	/**
 	 * @public @static run
@@ -45,13 +45,13 @@ export default class Migration {
 
 	static _config(flags) {
 		let path;
-		let file;
+		let config;
 		try {
-			file = flags.f ? (flags.f.charAt(0) === '/' || flags.f.charAt(0) === '\\' ? flags.f : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.f) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
-			fs.readFileSync(file);
-			path = file.replace(file.split(/\\|\//).pop(), '');
-		} catch (e) { console.log(`UKNOWN CONFIG ${file}\n`) }
-		return { path, file };
+			config = flags.c ? (flags.c.charAt(0) === '/' || flags.c.charAt(0) === '\\' ? flags.c : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.c) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
+			fs.readFileSync(config);
+			path = config.replace(config.split(/\\|\//).pop(), '');
+		} catch (e) { console.log(`UKNOWN CONFIG ${config}\n`) }
+		return { path, config };
 	}
 
 	/**
@@ -68,9 +68,9 @@ export default class Migration {
 
 		// get database files
 		const config = Migration._config(flags);
-		if (!config.file) return;
-		const databases = JSON.parse(fs.readFileSync(config.file));
-		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.config}\n`);
 
 		for await (const database of databases) {
 			if (flags.d && flags.d !== database.database) continue;
@@ -126,9 +126,9 @@ export default class Migration {
 
 		// get database files
 		const config = Migration._config(flags);
-		if (!config.file) return;
-		const databases = JSON.parse(fs.readFileSync(config.file));
-		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.config}\n`);
 
 		for await (const database of databases) {
 			if (flags.d && flags.d !== database.database) continue;
@@ -142,7 +142,8 @@ export default class Migration {
 			console.log('');
 
 			// grab all migrations
-			await db.select().from('public.migrate').catch(() => { }).then(async (data) => {
+			await db.select().from('public.migrate').catch(() => { })
+				.then(async (data) => {
 					let c = 0;
 					let ups = 0;
 			
@@ -221,9 +222,9 @@ export default class Migration {
 
 		// get database files
 		const config = Migration._config(flags);
-		if (!config.file) return;
-		const databases = JSON.parse(fs.readFileSync(config.file));
-		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.config}\n`);
 
 		console.log('');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -296,6 +297,12 @@ export default class Migration {
 	 * @param {Object} flags The migration flags to process e.g. { f: '', s: ''}
 	 */
 	static async parse(flags) {
+		if (!flags.f) return console.log(`UKNOWN FILE, you must set --file path/to/file.sql with parse task\n`); 
+
+		// get database files
+		const config = Migration._config(flags);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -365,6 +372,10 @@ export default class Migration {
 	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
 	static async up(flags) {
+		// get database files
+		const config = Migration._config(flags);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -373,8 +384,6 @@ export default class Migration {
 			console.log('');
 		}
 
-		// get all prepared migrations
-		let files = Migration._getFilesToMigration('./migration');
 
 		for await (const database of databases) {
 			if (flags.d && flags.d !== database.database) continue;
@@ -389,6 +398,9 @@ export default class Migration {
 
 			// grab all migrations
 			await db.select().from('public.migrate').catch(() => { }).then(async (data) => {
+				// get all prepared migrations
+				let files = Migration._getFilesToMigration(config.path + database.migrations);
+
 				for await (const file of files) {
 					// check file not ran against db
 					const fd = fs.readFileSync(file, 'utf8');
@@ -481,6 +493,10 @@ export default class Migration {
 	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
 	static async down(flags) {
+		// get database files
+		const config = Migration._config(flags);
+		if (!config.config) return;
+		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
 			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -489,133 +505,131 @@ export default class Migration {
 			console.log('');
 		}
 
-		// get all prepared migrations
-		let files = Migration._getFilesToMigration('./migration').reverse();
-
-		if (!flags.c) {
-			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('DOWN MIGRATION!!! ARE YOU SURE?');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('');
-			console.log('Are you sure you want to destory ' + (flags.m ? 'migration "' + flags.m + '" ' : '') + (flags.d ? '"' + flags.d + '" database.' : 'ALL databases.'));
-			console.log('Choosing DOWN on database/s will revert them completely, ALL DATA WILL BE LOST!');
-			console.log('');
-			console.log('Add this code to the end of your down command to enable down for 10 sec.');
-			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('I_WANT_TO_DESTROY_DATABASES_' + Math.round((Date.now() / 1000) + 10));
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('');
-			return;
-		} else if (Number(flags.c.replace('I_WANT_TO_DESTROY_DATABASES_', '')) >= Math.round(Date.now() / 1000)) {
-			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('CODE ACCEPTED...');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('');
-		} else {
-			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('CODE FAILED!');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('');
-			return;
-		}
-
-		for await (const database of databases) {
-			if (flags.d && flags.d !== database.database) continue;
-
-			// connect DB
-			let db = Migration._connect(database);
-			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('DOWN on ' + database.database);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-			console.log('');
-
-			// grab all migrations
-			await db.select().from('public.migrate').then(async (data) => {
-				for await (const file of files) {
-					// check file not ran against db
-					const fd = fs.readFileSync(file, 'utf8');
-					const fdMeta = fd.split('-- @up')[0];
-					const fdDown = fd.split('-- @up')[1].split('-- @down')[1];
-
-					// check timestamp and database name
-					let dbName, dbTimestamp, mgName;
-					try {
-						dbName = fdMeta.match("-- @database (.*)")[1];
-						dbTimestamp = fdMeta.match("-- @timestamp (.*)")[1];
-						mgName = fdMeta.match("-- @name (.*)")[1];
-						if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
-						if (database.database !== dbName) continue;
-						if (file.indexOf(dbTimestamp) < 0) throw Error('Timestamp missmatch between filename and file meta data [' + file + ']');
-						if (!mgName) throw Error('Cannot migration name in file [' + file + ']');
-					} catch (error) {
-						if (error.message) console.log(error.message);
-						throw error;
-					}
-
-					// migration search
-					if (flags.m) {
-						// check basic
-						if (!flags.d) {
-							console.log('');
-							console.log('Must use database name with specific migrations');
-							console.log('');
-							throw Error(); // only allow from or to with flags.d
-						}
-
-						// only do single migration
-						const migs = flags.m.split(':');
-						let from = migs[0];
-						let to = migs[1];
-
-						// single
-						if (from && !to) if (from !== dbTimestamp) continue;
-						// single
-						if (!from && to) if (to !== dbTimestamp) continue;
-						// range
-						if (from && to) {
-							if (!/^[0-9]{12,16}|start$/.test(from)) continue; // ts or start
-							if (!/^[0-9]{12,16}|end$/.test(to)) continue; // ts or end
-							from = isNaN(from) ? 0 : Number(from);
-							to = isNaN(to) ? 999999999999999999999 : Number(to);
-							if (Number(dbTimestamp) < from || Number(dbTimestamp) > to) continue;
-						}
-					}
-					
-					// check if migration not complete already, ignore if is not
-					let row = data.find((row) => row.name_unique === file);
-					if (!row || !row.completed) {
-						console.log('...Skipping ' + (!row ? 'pending' : 'uncompleted') + ' migration file [' + file + ']');
-						continue;
-					}
-
-					// do migrate and update table
-					try {
-						await db.raw(fdDown);
-						console.log('...Completed DOWN of migration file [' + file + ']');
-						await db('public.migrate').update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file });
-					} catch (error) {
-						if (error.message.indexOf('relation "public.migrate" does not exist') < 0) {
-							console.log('Error with message: ' + error.message);
-							console.log('NOTE: Cannot bring down migration, please handle manually for file [' + file + ']');
-						} else {
-							console.log('');
-							console.log('All migrations removed!');
-						}
-					}
-				}
-			}).catch(() => {}).then(() => db.destroy() );
-		}
-
 		console.log('');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
-		console.log('COMPLETE');
+		console.log('DOWN MIGRATION!!! ARE YOU SURE?');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		console.log('');
+		console.log('Are you sure you want to destory ' + (flags.m ? 'migration "' + flags.m + '" ' : '') + (flags.d ? '"' + flags.d + '" database.' : 'ALL databases.'));
+		console.log('Choosing DOWN on database/s will revert them completely, ALL DATA WILL BE LOST!');
+		console.log('');
+		console.log('To confirm this action, please type "yes" and press enter!');
+		console.log('');
+		console.log('To cancel this operation just press enter');
+		console.log('');
+		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+
+		const capture = readline.createInterface({
+			input: process.stdin,
+			output: process.stdout
+		})
+
+		capture.question(`Confirm, are you sure? `, async (confirm) => {
+			capture.close();
+
+			if (confirm !== 'yes') {
+				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('Cancelled down...');
+				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				return;
+			}
+
+			for await (const database of databases) {
+				if (flags.d && flags.d !== database.database) continue;
+
+				// connect DB
+				let db = Migration._connect(database);
+				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('DOWN on ' + database.database);
+				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('');
+
+				// grab all migrations
+				await db.select().from('public.migrate').then(async (data) => {
+					// get all prepared migrations
+					let files = Migration._getFilesToMigration(config.path + database.migrations).reverse();
+
+					for await (const file of files) {
+						// check file not ran against db
+						const fd = fs.readFileSync(file, 'utf8');
+						const fdMeta = fd.split('-- @up')[0];
+						const fdDown = fd.split('-- @up')[1].split('-- @down')[1];
+
+						// check timestamp and database name
+						let dbName, dbTimestamp, mgName;
+						try {
+							dbName = fdMeta.match("-- @database (.*)")[1];
+							dbTimestamp = fdMeta.match("-- @timestamp (.*)")[1];
+							mgName = fdMeta.match("-- @name (.*)")[1];
+							if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
+							if (database.database !== dbName) continue;
+							if (file.indexOf(dbTimestamp) < 0) throw Error('Timestamp missmatch between filename and file meta data [' + file + ']');
+							if (!mgName) throw Error('Cannot migration name in file [' + file + ']');
+						} catch (error) {
+							if (error.message) console.log(error.message);
+							throw error;
+						}
+
+						// migration search
+						if (flags.m) {
+							// check basic
+							if (!flags.d) {
+								console.log('');
+								console.log('Must use database name with specific migrations');
+								console.log('');
+								throw Error(); // only allow from or to with flags.d
+							}
+
+							// only do single migration
+							const migs = flags.m.split(':');
+							let from = migs[0];
+							let to = migs[1];
+
+							// single
+							if (from && !to) if (from !== dbTimestamp) continue;
+							// single
+							if (!from && to) if (to !== dbTimestamp) continue;
+							// range
+							if (from && to) {
+								if (!/^[0-9]{12,16}|start$/.test(from)) continue; // ts or start
+								if (!/^[0-9]{12,16}|end$/.test(to)) continue; // ts or end
+								from = isNaN(from) ? 0 : Number(from);
+								to = isNaN(to) ? 999999999999999999999 : Number(to);
+								if (Number(dbTimestamp) < from || Number(dbTimestamp) > to) continue;
+							}
+						}
+
+						// check if migration not complete already, ignore if is not
+						let row = data.find((row) => row.name_unique === file);
+						if (!row || !row.completed) {
+							console.log('...Skipping ' + (!row ? 'pending' : 'uncompleted') + ' migration file [' + file + ']');
+							continue;
+						}
+
+						// do migrate and update table
+						try {
+							await db.raw(fdDown);
+							console.log('...Completed DOWN of migration file [' + file + ']');
+							await db('public.migrate').update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file });
+						} catch (error) {
+							if (error.message.indexOf('relation "public.migrate" does not exist') < 0) {
+								console.log('Error with message: ' + error.message);
+								console.log('NOTE: Cannot bring down migration, please handle manually for file [' + file + ']');
+							} else {
+								console.log('');
+								console.log('All migrations removed!');
+							}
+						}
+					}
+				}).catch(() => { console.log('No migrations to down') }).then(() => db.destroy());
+			}
+
+			console.log('');
+			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('COMPLETE');
+			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('');
+		});
 	}
 
 	/**
