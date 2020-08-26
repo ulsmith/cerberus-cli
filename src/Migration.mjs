@@ -14,8 +14,8 @@ export default class Migration {
 	static get title() { return 'Migration' }
 	static get description() { return 'perform migrations on database/s, manage updates to database/s and perform actions such as loading data. Run task against default config or set a server to choose different server config' }
 	static get command() { return 'cerberus-cli migration [task] --argument value' }
-	// static get tasks() { return ['health', 'list', 'parse', 'up', 'down'] }
-	static get tasks() { return ['health'] }
+	// static get tasks() { return ['parse', 'up', 'down'] }
+	static get tasks() { return ['health', 'list', 'prepare'] }
 	static get arguments() { return ['--server production', '--database dbname', '--migration 1234567891234', '--code 1234567891234', '--file ./folder/file.sql'] }
 
 	/**
@@ -43,6 +43,17 @@ export default class Migration {
 		return new Knex({ client: database.engine, connection: database });
 	}
 
+	static _config(flags) {
+		let path;
+		let file;
+		try {
+			file = flags.f ? (flags.f.charAt(0) === '/' || flags.f.charAt(0) === '\\' ? flags.f : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.f) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
+			fs.readFileSync(file);
+			path = file.replace(file.split(/\\|\//).pop(), '');
+		} catch (e) { console.log(`UKNOWN CONFIG ${file}\n`) }
+		return { path, file };
+	}
+
 	/**
 	 * @public @method health
 	 * @description Check database health
@@ -56,14 +67,10 @@ export default class Migration {
 		console.log('');
 
 		// get database files
-		let file;
-		let databases = [];
-		try {
-			file = flags.f ? (flags.f.charAt(0) === '/' || flags.f.charAt(0) === '\\' ? flags.f : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.f) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
-			let dbFileData = fs.readFileSync(file);
-			databases = JSON.parse(dbFileData);
-		} catch (e) { return console.log(`UKNOWN CONFIG ${file}\n`) }
-		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${file}\n`);
+		const config = Migration._config(flags);
+		if (!config.file) return;
+		const databases = JSON.parse(fs.readFileSync(config.file));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
 
 		for await (const database of databases) {
 			if (flags.d && flags.d !== database.database) continue;
@@ -117,8 +124,11 @@ export default class Migration {
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		console.log('');
 
-		if (flags.d && !databases.find((db) => db.database === flags.d)) console.log('UKNOWN DATABASE ' + flags.d);
-		let files = Migration._getFilesToMigration('./migration');
+		// get database files
+		const config = Migration._config(flags);
+		if (!config.file) return;
+		const databases = JSON.parse(fs.readFileSync(config.file));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
 
 		for await (const database of databases) {
 			if (flags.d && flags.d !== database.database) continue;
@@ -135,6 +145,10 @@ export default class Migration {
 			await db.select().from('public.migrate').catch(() => { }).then(async (data) => {
 					let c = 0;
 					let ups = 0;
+			
+					// get migration files
+					let files = Migration._getFilesToMigration(confg.path + database.migrations);
+
 					for await (const file of files) {
 						// check file not ran against db
 						const fd = fs.readFileSync(file, 'utf8');
@@ -203,8 +217,13 @@ export default class Migration {
 	 * @param {Object} flags The migration flags to process e.g. { d: '', m: '', c: '', s: ''}
 	 */
 	static prepare(flags) {
-		let files = Migration._getFilesToPrepare('./migration');
 		let timestamp = Date.now();
+
+		// get database files
+		const config = Migration._config(flags);
+		if (!config.file) return;
+		const databases = JSON.parse(fs.readFileSync(config.file));
+		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.file}\n`);
 
 		console.log('');
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
@@ -212,51 +231,56 @@ export default class Migration {
 		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
 		console.log('');
 
-		try {
-			for (const file of files) {
-				// skip prepared files
-				if (/prepared-[0-9]{12,20}--[a-zA-Z0-9_-]+\.sql/.test(file)) {
-					console.log('...Skipping prepared migration file [' + file + ']');
-					continue;
+		for (const database of databases) {
+			if (flags.d && flags.d !== database.database) continue;
+			let files = Migration._getFilesToPrepare(config.path + database.migrations);
+
+			try {
+				for (const file of files) {
+					// skip prepared files
+					if (/prepared-[0-9]{12,20}--[a-zA-Z0-9_-]+\.sql/.test(file)) {
+						console.log('...Skipping prepared migration file [' + file + ']');
+						continue;
+					}
+		
+					// throw error on bad file names
+					const parts = file.split('/');
+					const name = parts.pop();
+					if (!/^[a-zA-Z0-9_-]+\.sql$/.test(name)) throw Error('Cannot prepare file, invalid filename "' + name + '" [' + file + ']');
+		
+					// generate unqie timestamp per file
+					let ts = Date.now();
+					while (timestamp >= ts) { ts = Date.now() };
+					timestamp = ts;
+					
+					// update file and rename too
+					const text = fs.readFileSync(file, 'utf8');
+		
+					// check we have a database, up, down and begin commit in file
+					try {
+						const dbName = text.match("-- @database (.*)");
+						const dbUp = text.match("-- @up");
+						const dbDown = text.match("-- @down");
+						if (!dbName || dbName[1].length < 2) throw Error('Cannot resolve database name in file [' + file + ']');
+						if (!dbUp || dbUp[0] !== '-- @up') throw Error('Cannot find \'-- @up\' section in migrate file [' + file + ']');
+						if (!dbDown || dbDown[0] !== '-- @down') throw Error('Cannot find \'-- @down\' section in migrate file [' + file + ']');
+					} catch (error) {
+						console.log(error.message);
+						return;
+					}
+		
+					const data = fs.readFileSync(file);
+					const fd = fs.openSync(file, 'w+')
+					const insert = new Buffer.from(`-- @timestamp ${timestamp}\n`)
+					fs.writeSync(fd, insert, 0, insert.length, 0)
+					fs.writeSync(fd, data, 0, data.length, insert.length)
+					fs.close(fd, (err) => { if (err) throw err });
+					fs.renameSync(file, parts.join('/') + '/prepared-' + timestamp + '--' + name);
+					console.log('...Prepared migration file [prepared-' + timestamp + '--' + name + '] from [' + file + ']');
 				}
-	
-				// throw error on bad file names
-				const parts = file.split('/');
-				const name = parts.pop();
-				if (!/^[a-zA-Z0-9_-]+\.sql$/.test(name)) throw Error('Cannot prepare file, invalid filename "' + name + '" [' + file + ']');
-	
-				// generate unqie timestamp per file
-				let ts = Date.now();
-				while (timestamp >= ts) { ts = Date.now() };
-				timestamp = ts;
-				
-				// update file and rename too
-				const text = fs.readFileSync(file, 'utf8');
-	
-				// check we have a database, up, down and begin commit in file
-				try {
-					const dbName = text.match("-- @database (.*)");
-					const dbUp = text.match("-- @up");
-					const dbDown = text.match("-- @down");
-					if (!dbName || dbName[1].length < 2) throw Error('Cannot resolve database name in file [' + file + ']');
-					if (!dbUp || dbUp[0] !== '-- @up') throw Error('Cannot find \'-- @up\' section in migrate file [' + file + ']');
-					if (!dbDown || dbDown[0] !== '-- @down') throw Error('Cannot find \'-- @down\' section in migrate file [' + file + ']');
-				} catch (error) {
-					console.log(error.message);
-					return;
-				}
-	
-				const data = fs.readFileSync(file);
-				const fd = fs.openSync(file, 'w+')
-				const insert = new Buffer.from(`-- @timestamp ${timestamp}\n`)
-				fs.writeSync(fd, insert, 0, insert.length, 0)
-				fs.writeSync(fd, data, 0, data.length, insert.length)
-				fs.close(fd, (err) => { if (err) throw err });
-				fs.renameSync(file, parts.join('/') + '/prepared-' + timestamp + '--' + name);
-				console.log('...Prepared migration file [prepared-' + timestamp + '--' + name + '] from [' + file + ']');
+			} catch (error) {
+				console.log(error.message);
 			}
-		} catch (error) {
-			console.log(error.message);
 		}
 
 		console.log('');

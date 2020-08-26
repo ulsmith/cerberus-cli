@@ -105,9 +105,22 @@ In addition to handling migrations, we also have a DB visualizer called [https:/
 
 The migration tool may be run directly through cerberus-cli from the CLI or form teh project root through NPM...
 
-Task: health > Perform health check on databases in config
-Argument: --server/-s production > Set a server extension on the migration file e.g. migration.server.json in the current working directory
-Argument: --file/-f some/file.json > Set a the file to migration config as a full path to file or relative
+## health
+* Task: health > Perform health check on databases in config
+* Argument: --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+* Argument: --file/-f some/file.json > Set a the file to migration config as a full path to file or relative
+
+## list
+* Task: list > Check the migration table and also the migration files to see whats what, whats been run.
+* Argument: --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+* Argument: --file/-f some/file.json > Set a the file to migration config as a full path to file or relative
+* Argument: --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
+
+## prepare
+* Task: prepare > Prepare any migration files ready for running them (you have to prepare a migration before you run it, to ensure its good)
+* Argument: --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+* Argument: --file/-f some/file.json > Set a the file to migration config as a full path to file or relative
+* Argument: --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
 
 TBC...
 
