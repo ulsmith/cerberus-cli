@@ -1,7 +1,6 @@
 'use strict';
 
 const Controller = require('cerberus-mvc/Base/Controller');
-// const HealthModel = require('../Model/DatabaseName/Public/Health.js');
 
 /**
  * @namespace API/Controller
