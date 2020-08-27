@@ -1,4 +1,6 @@
-![CerberusMVC](cerberus-500x500.png)
+<p align="center">
+  <img width="500" height="500" src="cerberus-500x500.png">
+</p>
 
 # INTRO
 
