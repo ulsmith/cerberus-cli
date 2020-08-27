@@ -151,6 +151,7 @@ The migration tool has the following tasks that can be performed
 Perform health check on databases in config
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
 
 ### list
@@ -160,7 +161,9 @@ Perform health check on databases in config
 Check the migration table and also the migration files to see whats what, whats been run.
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
+
 **Argument** (optional) --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
 
 ### prepare
@@ -170,7 +173,9 @@ Check the migration table and also the migration files to see whats what, whats 
 Prepare any migration files ready for running them (you have to prepare a migration before you run it, to ensure its good)
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
+
 **Argument** (optional) --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
 
 ### parse
@@ -180,8 +185,11 @@ Prepare any migration files ready for running them (you have to prepare a migrat
 Parse a specific SQL file, this requires the file argument to be used to specify the file to process; you can use this to import data to a new database.
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
+
 **Argument** (optional) --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
+
 **Argument** (required) --file/-f some/file.sql > The SQL file you want to parse and run
 
 ### up
@@ -194,8 +202,11 @@ Bring database/s up to current prepared migrations associated with them. This ta
 Adding a timestamp value to the argument or a range of timestamps will instruct the up task to perform only these migrates. Colon is used to dictate a range as 'start:timestamp', 'timestamp:timestamp' or 'timestamp:end' to dictate start to timestamp, timestamp to timestamp or timestamp to end. Any processed migrations will be skipped.
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
+
 **Argument** (optional) --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
+
 **Argument** (optional) --migration/-m 123456789:123456799 > Parse only this range of migrations. Use 'start' or 'end' keywords to dictate the start or end of the prepared migrations.
 
 ### down
@@ -208,8 +219,11 @@ Bring database/s down to current prepared migrations associated with them. This 
 Adding a timestamp value to the argument or a range of timestamps will instruct the down task to drop only these migrates. Colon is used to dictate a range as ':timestamp', 'timestamp:timestamp' or 'timestamp:' to dictate start to timestamp, timestamp to timestamp or timestamp to end. Any processed migrations will be skipped. All down migrations happen in reverse. So a down with no timestamp/s will bring down migrations from end to start. A range of timestamps will be brought down from last to first. All migrations are removed in reverse order.
 
 **Argument** (optional) --server/-s production > Set a server extension on the migration file e.g. migration.production.json in the current working directory, default is no server e.g. migration.json
+
 **Argument** (optional) --config/-c some/file.json > Set a the file to migration config as a full path to file or relative
+
 **Argument** (optional) --database/-d yourdb > You may have more than one DB in your server stack, this picks just that db
+
 **Argument** (optional) --migration/-m 123456789:123456799 > Parse only this range of migrations. Use 'start' or 'end' keywords to dictate the start or end of the prepared migrations.
 
 ## Migration Files
