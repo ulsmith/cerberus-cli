@@ -241,9 +241,8 @@ In this example we create a single table, some types and also set up some permis
 
 !IMPORTANT, you are required to have a migration table in your database to manage migrations. Ensure the name of this table matches the name in the config (table). Your first migration file should contain the migration table in it with it, using the columns stipulated in the example below as a minimum.
 
+initial-setup.sql
 ```sql
--- @timestamp 1598460435934
--- @timestamp 1594491736508
 -- @engine postgres
 -- @database cerberus
 -- @name initial-setup
