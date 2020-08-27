@@ -142,13 +142,13 @@ export default class Migration {
 			console.log('');
 
 			// grab all migrations
-			await db.select().from(database.table).catch(() => { })
+			await db.select().from(database.table).catch((e) => { })
 				.then(async (data) => {
 					let c = 0;
 					let ups = 0;
-			
+
 					// get migration files
-					let files = Migration._getFilesToMigration(confg.path + database.migrations);
+					let files = Migration._getFilesToMigration(config.path + database.migrations);
 
 					for await (const file of files) {
 						// check file not ran against db
@@ -172,7 +172,7 @@ export default class Migration {
 						// check if migration already complete, ignore if is, also dont shit if no data as might be first migration that includes migration table!
 						let row;
 						try {
-							row = data.find((row) => row.name_unique === file);
+							row = data.find((row) => row.name_unique === file.split(/\\|\//).pop());
 							c++;
 							if (row) {
 								if (row.completed) {
@@ -197,7 +197,7 @@ export default class Migration {
 					console.log(`${ups === c ? 'TOTAL' : 'NOTICE'}: ${ups} out of ${c} migrations are "up"`);
 					console.log('');
 					
-					const missing = data.filter((row) => !files.find((file) => file === row.name_unique));
+					const missing = data.filter((row) => !files.find((file) => file.split(/\\|\//).pop() === row.name_unique));
 					for (const miss of missing) console.log('WARNING: [' + miss.name_unique + '] missing from migrate folder! last completed "' + miss.data.action + '" on ' + miss.completed.toISOString().replace(/T/, ' ').replace(/\..+/, ''));
 				})
 				.catch(() => {});
@@ -454,7 +454,7 @@ export default class Migration {
 					
 					let row;
 					try {
-						row = data.find((row) => row.name_unique === file);
+						row = data.find((row) => row.name_unique === file.split(/\\|\//).pop());
 						if (row && row.completed) {
 							console.log('...Skipping completed migration file [' + file + ']');
 							continue;
@@ -465,8 +465,8 @@ export default class Migration {
 					try {
 						await db.raw(fdUp);
 
-						if (row) await db(database.table).update({ completed: new Date(), data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta }) }).where({ name_unique: file });
-						else await db(database.table).insert({ completed: new Date(), name_unique: file, data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta })});
+						if (row) await db(database.table).update({ completed: new Date(), data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta }) }).where({ name_unique: file.split(/\\|\//).pop() });
+						else await db(database.table).insert({ completed: new Date(), name_unique: file.split(/\\|\//).pop(), data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta })});
 						
 						console.log('...Completed UP of migration file [' + file + ']');
 					} catch (error) {
@@ -600,7 +600,7 @@ export default class Migration {
 						}
 
 						// check if migration not complete already, ignore if is not
-						let row = data.find((row) => row.name_unique === file);
+						let row = data.find((row) => row.name_unique === file.split(/\\|\//).pop());
 						if (!row || !row.completed) {
 							console.log('...Skipping ' + (!row ? 'pending' : 'uncompleted') + ' migration file [' + file + ']');
 							continue;
@@ -610,7 +610,7 @@ export default class Migration {
 						try {
 							await db.raw(fdDown);
 							console.log('...Completed DOWN of migration file [' + file + ']');
-							await db(database.table).update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file });
+							await db(database.table).update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file.split(/\\|\//).pop() });
 						} catch (error) {
 							if (error.message.indexOf('relation "' + database.table + '" does not exist') < 0) {
 								console.log('Error with message: ' + error.message);

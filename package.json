@@ -1,6 +1,6 @@
 {
 	"name": "cerberus-cli",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"description": "CerberusCLI is a CLI tool for cerberus-mvc; generating new projects, managing databases and more.",
 	"author": "Paul Smith",
 	"url": "https://github.com/ulsmith/cerberus-cli",
@@ -14,14 +14,14 @@
 	"bin": {
 		"cerberus-cli": "./index.mjs"
 	},
-	"dependencies": {},
-	"devDependencies": {
+	"dependencies": {
 		"fs-extra": "^9.0.1",
 		"knex": "^0.21.5",
 		"mysql": "^2.18.1",
 		"pg": "^8.3.2",
 		"replace-in-file": "^6.1.0"
 	},
+	"devDependencies": {},
 	"engines": {
 		"node": ">=12.0"
 	}
