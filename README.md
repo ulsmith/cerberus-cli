@@ -1,3 +1,5 @@
+![CerberusMVC](cerberus-500x500.png)
+
 # INTRO
 
 CerberusCLI is a globally installable CLI tool for working with [CerberusMVC](https://www.npmjs.com/package/cerberus-mvc), a node based MVC stack for serverless function as a service architectures.
