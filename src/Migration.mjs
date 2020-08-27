@@ -16,7 +16,7 @@ export default class Migration {
 	static get description() { return 'perform migrations on database/s, manage updates to database/s and perform actions such as loading data. Run task against default config or set a server to choose different server config' }
 	static get command() { return 'cerberus-cli migration [task] --argument value' }
 	static get tasks() { return ['health', 'list', 'prepare', 'parse', 'up', 'down'] }
-	static get arguments() { return ['--server production', '--database dbname', '--migration 1234567891234', '--config ./folder/manifest.json', '--file ./folder/file.sql'] }
+	static get arguments() { return ['--server/-s production', '--database/-d dbname', '--migration/-m 1234567891234', '--config/-c ./folder/manifest.json', '--file/-f ./folder/file.sql'] }
 
 	/**
 	 * @public @static run
@@ -142,7 +142,7 @@ export default class Migration {
 			console.log('');
 
 			// grab all migrations
-			await db.select().from('public.migrate').catch(() => { })
+			await db.select().from(database.table).catch(() => { })
 				.then(async (data) => {
 					let c = 0;
 					let ups = 0;
@@ -397,7 +397,7 @@ export default class Migration {
 			console.log('');
 
 			// grab all migrations
-			await db.select().from('public.migrate').catch(() => { }).then(async (data) => {
+			await db.select().from(database.table).catch(() => { }).then(async (data) => {
 				// get all prepared migrations
 				let files = Migration._getFilesToMigration(config.path + database.migrations);
 
@@ -465,8 +465,8 @@ export default class Migration {
 					try {
 						await db.raw(fdUp);
 
-						if (row) await db('public.migrate').update({ completed: new Date(), data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta }) }).where({ name_unique: file });
-						else await db('migrate').insert({ completed: new Date(), name_unique: file, data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta })});
+						if (row) await db(database.table).update({ completed: new Date(), data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta }) }).where({ name_unique: file });
+						else await db(database.table).insert({ completed: new Date(), name_unique: file, data: JSON.stringify({ action: 'up', sql: fdUp, meta: fdMeta })});
 						
 						console.log('...Completed UP of migration file [' + file + ']');
 					} catch (error) {
@@ -545,7 +545,7 @@ export default class Migration {
 				console.log('');
 
 				// grab all migrations
-				await db.select().from('public.migrate').then(async (data) => {
+				await db.select().from(database.table).then(async (data) => {
 					// get all prepared migrations
 					let files = Migration._getFilesToMigration(config.path + database.migrations).reverse();
 
@@ -610,9 +610,9 @@ export default class Migration {
 						try {
 							await db.raw(fdDown);
 							console.log('...Completed DOWN of migration file [' + file + ']');
-							await db('public.migrate').update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file });
+							await db(database.table).update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file });
 						} catch (error) {
-							if (error.message.indexOf('relation "public.migrate" does not exist') < 0) {
+							if (error.message.indexOf('relation "' + database.table + '" does not exist') < 0) {
 								console.log('Error with message: ' + error.message);
 								console.log('NOTE: Cannot bring down migration, please handle manually for file [' + file + ']');
 							} else {

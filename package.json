@@ -1,9 +1,15 @@
 {
 	"name": "cerberus-cli",
-	"version": "0.0.4",
-	"description": "CLI tool for cerberus-mvc, generates new projects and other functions",
+	"version": "1.0.0",
+	"description": "CerberusCLI is a CLI tool for cerberus-mvc; generating new projects, managing databases and more.",
 	"author": "Paul Smith",
+	"url": "https://github.com/ulsmith/cerberus-cli",
+	"homepage": "https://ulsmith.net",
 	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/ulsmith/cerberus-cli"
+	},
 	"main": "./index.mjs",
 	"bin": {
 		"cerberus-cli": "./index.mjs"
