@@ -1,8 +1,8 @@
 {
-	"name": "cerberus-mvc",
+	"name": "my-cerberus-mvc-api",
 	"version": "0.0.1",
-	"description": "A cerberus MVC stack API",
-	"author": "Paul Smith",
+	"description": "My cerberus MVC stack API",
+	"author": "Jonny Bee",
 	"license": "MIT",
 	"private": true,
 	"scripts": {
@@ -14,7 +14,7 @@
 		"swagger:down": "docker-compose down"
 	},
 	"dependencies": {
-		"cerberus-mvc": "^1.0.0"
+		"cerberus-mvc": "^1.0.1"
 	},
 	"devDependencies": {},
 	"engines": {

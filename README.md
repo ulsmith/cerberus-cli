@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="500" height="500" src="cerberus-500x500.png">
+  <img width="250" height="250" src="cerberus-round-wob-500x500.png">
 </p>
 
 # INTRO
@@ -7,6 +7,8 @@
 CerberusCLI is a globally installable CLI tool for working with [CerberusMVC](https://www.npmjs.com/package/cerberus-mvc), a node based MVC stack for serverless function as a service architectures.
 
 The premis for the CLI tool is to offer a few simple tools for dealing with CerberusMVC such as initialising new projects and handling things like database migrations, compatible with the database visualisation tool [DBDuck](https://dbduck.net) for visualisation and DB design.
+
+Want to know more, see more of CerberusMVC? We are all about MVP, we are happy to expand documentation, add in more support; let us know your thoughts... [Find me here](https://pa.ulsmith.net).
 
 # INSTALLATION
 
