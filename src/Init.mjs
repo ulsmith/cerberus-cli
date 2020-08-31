@@ -35,7 +35,7 @@ export default class Init {
 		return Init.meta()
 			.then((meta) => Init.structure(meta))
 			.then((meta) => Init.packageJSON(meta))
-			.then((meta) => Init.templateYAML(meta))
+			.then((meta) => Init.templateFile(meta))
 			.then((meta) => Init.swaggerJSON(meta))
 			.then((meta) => Init.dockerComposeYAML(meta))
 			.then((meta) => Init.readmeMD(meta))
@@ -80,7 +80,7 @@ export default class Init {
 
 		return new Promise((res) => capture.question(`Project title: `, (title) => res({title: title})))
 			.then((data) => new Promise((res) => capture.question(`Project name (a-z, 0-9, - and _ only): `, (name) => res({ ...data, name: name }))))
-			.then((data) => new Promise((res) => capture.question(`Project type, default: aws (options: aws): `, (type) => res({ ...data, type: type }))))
+			.then((data) => new Promise((res) => capture.question(`Project type, default: aws (options: aws, express): `, (type) => res({ ...data, type: type }))))
 			.then((data) => new Promise((res) => capture.question(`Your name (author): `, (author) => res({ ...data, author: author }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Root folder/dir name (leave blank to use project name): `, (folder) => res({ ...data, folder: folder }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Description of project: `, (description) => res({ ...data, description: description }))))
@@ -94,7 +94,7 @@ export default class Init {
 				if (!/^[a-z0-9-_]+$/.test(data.name)) throw Error(`Project name must be in the form of 'test-name_0123'.`);
 				data.private = !data.private || data.private.toLowerCase() == 'yes' ? true : false; 
 				if (!data.node) data.node = '>=13.0'; 
-				if (['aws'].indexOf(data.type) < 0) throw Error(`Project type must be one of available options [aws].`);
+				if (['aws', 'express'].indexOf(data.type) < 0) throw Error(`Project type must be one of available options [aws, express].`);
 				if (!data.title || !data.name || !data.author) throw Error(`Must include title, name, type and author.`);
 				
 				return data;
@@ -140,7 +140,7 @@ export default class Init {
 				data.author = meta.author;
 				data.license = meta.license;
 				data.private = !!meta.private;
-				data.scripts.deploy = data.scripts.deploy.replace('<meta.name>', meta.name);
+				if (data.scripts && data.scripts.deploy) data.scripts.deploy = data.scripts.deploy.replace('<meta.name>', meta.name);
 				return data;
 			})
 			.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/package.json', data, { spaces: '\t' }))
@@ -148,20 +148,34 @@ export default class Init {
 	}
 
 	/**
-	 * @public @static templateYAML
+	 * @public @static templateFile
 	 * @desciption Set template.yaml
 	 * @param {Object} meta Meta data object
 	 * @return {Object} Meta data object
 	 */
-	static templateYAML(meta) {
-		console.log('Updating template.yaml...');
-
-		// create structure from template
-		return Promise.resolve()
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.name>', to: meta.name }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.title>', to: meta.title }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.description>', to: meta.description }))
-			.then(() => meta);
+	static templateFile(meta) {
+		if (meta.type === 'aws') {
+			console.log('Updating template.yaml...');
+	
+			// create structure from template
+			return Promise.resolve()
+				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.name>', to: meta.name }))
+				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.title>', to: meta.title }))
+				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.description>', to: meta.description }))
+				.then(() => meta);
+		} else if (meta.type === 'express') {
+			console.log('Updating template.json...');
+	
+			// create structure from template
+			return Promise.resolve()
+				.then(() => fsx.readJson(process.env.PWD + '/' + meta.path + '/template.json'))
+				.then((data) => {
+					data.global.environment.API_NAME = data.global.environment.API_NAME + '-' + meta.name;
+					return data;
+				})
+				.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/template.json', data, { spaces: '\t' }))
+				.then(() => meta);
+		}
 	}
 
 	/**

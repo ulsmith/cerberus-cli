@@ -4,6 +4,8 @@
 
 # INTRO
 
+Now Support AWS and ExpressJS (with child processes)
+
 CerberusCLI is a globally installable CLI tool for working with [CerberusMVC](https://www.npmjs.com/package/cerberus-mvc), a node based MVC stack for serverless function as a service architectures.
 
 The premis for the CLI tool is to offer a few simple tools for dealing with CerberusMVC such as initialising new projects and handling things like database migrations, compatible with the database visualisation tool [DBDuck](https://dbduck.net) for visualisation and DB design.

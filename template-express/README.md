@@ -1,6 +1,6 @@
 # <meta.title>
 
-CerberusMVC (AWS Resources)...
+CerberusMVC (Express Clustered Process)...
 
 <meta.description>
 

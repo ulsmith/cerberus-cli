@@ -14,10 +14,10 @@
 		"swagger:down": "docker-compose down"
 	},
 	"dependencies": {
-		"cerberus-mvc": "^1.0.1"
+		"cerberus-mvc": "^1.0.3"
 	},
 	"devDependencies": {},
 	"engines": {
-		"node": ">=13.0"
+		"node": ">=12.0"
 	}
 }
