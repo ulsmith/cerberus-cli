@@ -1,3 +1,4 @@
+import Tools from './Tools.mjs';
 
 /**
  * @namespace CLI
