@@ -23,7 +23,7 @@ export default class Help {
 	 * @param {String} action The action chosen on CLI
 	 */
 	static run(args, actions, action) {
-		let cache = [];
+		let cache = ['Help']; // skip itself
 
 		console.log('');
 		console.log(`                                                                 `);
