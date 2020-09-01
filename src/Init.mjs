@@ -3,6 +3,7 @@ import fs from 'fs';
 import fsx from 'fs-extra';
 import replace from 'replace-in-file';
 import { exec } from 'child_process';
+import Tools from './Tools.mjs';
 
 /**
  * @namespace CLI
@@ -114,11 +115,14 @@ export default class Init {
 
 		// folder good?
 		if (!/^[\w\-. ]+$/.test(meta.path)) throw Error(`Cannot create folder [${meta.path}] from [${meta.folder || meta.project}], invalid chars in folder name.`);
-		if (fs.existsSync(process.env.PWD + '/' + meta.path)) throw Error(`Cannot create folder [${meta.path}], folder already exists.`);
+		if (fs.existsSync(Tools.pwd + (Tools.system === 'windows' ? '\\' : '/') + meta.path)) throw Error(`Cannot create folder [${meta.path}], folder already exists.`);
 		
 		// create structure from template
 		return Promise.resolve()
-			.then(() => fsx.copy(process.env._.replace('bin/cerberus-cli', 'lib/node_modules/cerberus-cli') + '/template-' + meta.type, process.env.PWD + '/' + meta.path))
+			.then(() => {
+				if (Tools.system === 'windows') return fsx.copy(Tools.pid + '\\template-' + meta.type, Tools.pwd + '\\' + meta.path);
+				else return fsx.copy(Tools.pid + '/template-' + meta.type, Tools.pwd + '/' + meta.path);
+			})
 			.then(() => meta);
 	}
 	
@@ -133,7 +137,10 @@ export default class Init {
 
 		// create structure from template
 		return Promise.resolve()
-			.then(() => fsx.readJson(process.env.PWD + '/' + meta.path + '/package.json'))
+			.then(() => {
+				if (Tools.system === 'windows') fsx.readJson(Tools.pid + '\\' + meta.path + '\\package.json'); 
+				else return fsx.readJson(Tools.pid  + '/' + meta.path + '/package.json');
+			})
 			.then((data) => {
 				data.name = meta.name;
 				data.description = meta.description;
@@ -143,7 +150,10 @@ export default class Init {
 				if (data.scripts && data.scripts.deploy) data.scripts.deploy = data.scripts.deploy.replace('<meta.name>', meta.name);
 				return data;
 			})
-			.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/package.json', data, { spaces: '\t' }))
+			.then((data) => {
+				if (Tools.system === 'windows') fsx.writeJson(Tools.pid + '\\' + meta.path + '\\package.json', data, { spaces: '\t' });
+				else return fsx.writeJson(Tools.pid + '/' + meta.path + '/package.json', data, { spaces: '\t' });
+			})
 			.then(() => meta);
 	}
 
@@ -159,21 +169,21 @@ export default class Init {
 	
 			// create structure from template
 			return Promise.resolve()
-				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.name>', to: meta.name }))
-				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.title>', to: meta.title }))
-				.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/template.yaml', from: '<meta.description>', to: meta.description }))
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.yaml` : `/${meta.path}/template.yaml`), from: '<meta.name>', to: meta.name }))
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.yaml` : `/${meta.path}/template.yaml`), from: '<meta.title>', to: meta.title }))
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.yaml` : `/${meta.path}/template.yaml`), from: '<meta.description>', to: meta.description }))
 				.then(() => meta);
 		} else if (meta.type === 'express') {
 			console.log('Updating template.json...');
 	
 			// create structure from template
 			return Promise.resolve()
-				.then(() => fsx.readJson(process.env.PWD + '/' + meta.path + '/template.json'))
+				.then(() => fsx.readJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.json` : `/${meta.path}/template.json`)))
 				.then((data) => {
 					data.global.environment.API_NAME = data.global.environment.API_NAME + '-' + meta.name;
 					return data;
 				})
-				.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/template.json', data, { spaces: '\t' }))
+				.then((data) => fsx.writeJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.json` : `/${meta.path}/template.json`), data, { spaces: '\t' }))
 				.then(() => meta);
 		}
 	}
@@ -189,7 +199,7 @@ export default class Init {
 
 		// create structure from template
 		return Promise.resolve()
-			.then(() => fsx.readJson(process.env.PWD + '/' + meta.path + '/swagger.json'))
+			.then(() => fsx.readJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`)))
 			.then((data) => {
 				data.info.title = meta.title;
 				data.info.description = meta.description;
@@ -198,7 +208,7 @@ export default class Init {
 				data.servers[0].url = meta.type === 'aws' ? 'http://localhost:3000' : '';
 				return data;
 			})
-			.then((data) => fsx.writeJson(process.env.PWD + '/' + meta.path + '/swagger.json', data, { spaces: '\t' }))
+			.then((data) => fsx.writeJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`), data, { spaces: '\t' }))
 			.then(() => meta);
 	}
 
@@ -213,9 +223,9 @@ export default class Init {
 		
 		// create structure from template
 		return Promise.resolve()
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/docker-compose.yaml', from: '<meta.name>', to: meta.name }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/docker-compose.yaml', from: '<meta.title>', to: meta.title }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/docker-compose.yaml', from: '<meta.description>', to: meta.description }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.name>', to: meta.name }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.title>', to: meta.title }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.description>', to: meta.description }))
 			.then(() => meta);
 	}
 
@@ -230,9 +240,9 @@ export default class Init {
 
 		// create structure from template
 		return Promise.resolve()
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/README.md', from: '<meta.name>', to: meta.name }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/README.md', from: '<meta.title>', to: meta.title }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/README.md', from: '<meta.description>', to: meta.description }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\README.md` : `/${meta.path}/README.md`), from: '<meta.name>', to: meta.name }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\README.md` : `/${meta.path}/README.md`), from: '<meta.title>', to: meta.title }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\README.md` : `/${meta.path}/README.md`), from: '<meta.description>', to: meta.description }))
 			.then(() => meta);
 	}
 
@@ -247,9 +257,9 @@ export default class Init {
 
 		// create structure from template
 		return Promise.resolve()
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/RELEASE.md', from: '<meta.name>', to: meta.name }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/RELEASE.md', from: '<meta.title>', to: meta.title }))
-			.then(() => replace({ files: process.env.PWD + '/' + meta.path + '/RELEASE.md', from: '<meta.description>', to: meta.description }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\RELEASE.md` : `/${meta.path}/RELEASE.md`), from: '<meta.name>', to: meta.name }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\RELEASE.md` : `/${meta.path}/RELEASE.md`), from: '<meta.title>', to: meta.title }))
+			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\RELEASE.md` : `/${meta.path}/RELEASE.md`), from: '<meta.description>', to: meta.description }))
 			.then(() => meta);
 	}
 
@@ -262,7 +272,7 @@ export default class Init {
 	static exec(meta) {
 		console.log('Executing final commands...');
 		
-		return new Promise((res, rej) => exec(`cd ${process.env.PWD + '/' + meta.path} && npm install`, (error, stdout, stderr) => {
+		return new Promise((res, rej) => exec(`cd ${Tools.system === 'windows' ? Tools.pwd + '\\' + meta.path : Tools.pwd + '/' + meta.path} && npm install`, (error, stdout, stderr) => {
 				if (error) return rej(error);
 				if (stderr) return res(stderr);
 				return res(stdout);

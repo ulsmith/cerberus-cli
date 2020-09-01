@@ -1,6 +1,7 @@
 import fs from 'fs';
 import Knex from 'knex';
 import readline from 'readline';
+import Tools from './Tools.mjs';
 
 /**
  * @namespace CLI
@@ -47,7 +48,12 @@ export default class Migration {
 		let path;
 		let config;
 		try {
-			config = flags.c ? (flags.c.charAt(0) === '/' || flags.c.charAt(0) === '\\' ? flags.c : process.env.PWD + (process.env.PWD.indexOf('/') >= 0 ? '/' : '\\') + flags.c) : `${process.env.PWD}/migration${flags.s ? '.' + flags.s : ''}.json`;
+			config = flags.c 
+				? (flags.c.charAt(0) === '/' || flags.c.charAt(0) === '\\' 
+					? flags.c 
+					: Tools.pwd + (Tools.pwd.indexOf('/') >= 0 ? '/' : '\\') + flags.c
+				) 
+				: (Tools.system === 'windows' ? `${Tools.pwd}\\migration${flags.s ? '.' + flags.s : ''}.json` : `${Tools.pwd}/migration${flags.s ? '.' + flags.s : ''}.json`);
 			fs.readFileSync(config);
 			path = config.replace(config.split(/\\|\//).pop(), '');
 		} catch (e) { console.log(`UKNOWN CONFIG ${config}\n`) }

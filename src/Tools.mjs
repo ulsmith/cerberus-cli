@@ -1,4 +1,5 @@
 import fsx from 'fs-extra';
+import path from 'path';
 
 /**
  * @namespace CLI
@@ -43,6 +44,35 @@ export default class Tools {
 	 */
 	static packageJSON() {
 		// create structure from template
-		return fsx.readJson(process.env._.replace('bin/cerberus-cli', 'lib/node_modules/cerberus-cli/package.json'));
+		if (Tools.system === 'windows') return fsx.readJson(Tools.pid + '\\package.json'); 
+		else return fsx.readJson(Tools.pid + '/package.json');
+	}
+
+	/**
+	 * @public @static system
+	 * @desciption Get system type
+	 */
+	static get system() {
+		if (process.env.OS && process.env.OS.toLowerCase().indexOf('windows') >= 0) return 'windows';
+		else if (process.env.PWD) return 'unix';
+		else return 'unknown';
+	}
+
+	/**
+	 * @public @static pwd
+	 * @desciption Get working directory
+	 */
+	static get pwd() {
+		return process.cwd();
+	}
+
+	/**
+	 * @public @static pid
+	 * @desciption Get installed directory
+	 */
+	static get pid() {
+		if (process.env.dp0) return process.env.dp0 + 'node_modules\\cerberus-cli';
+		else if (process.env._) return process.env._.replace('bin/cerberus-cli', 'lib/node_modules/cerberus-cli');
+		else return '/usr/lib/node_modules/cerberus-cli';
 	}
 }
