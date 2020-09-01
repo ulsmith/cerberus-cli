@@ -67,9 +67,9 @@ export default class Migration {
 	 */
 	static async health(flags) {
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('HEALTH' + (flags.d ? ' FOR ' + flags.d : ''));
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 
 		// get database files
@@ -112,9 +112,9 @@ export default class Migration {
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('COMPLETE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 	}
 
@@ -125,9 +125,9 @@ export default class Migration {
 	 */
 	static async list(flags) {
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('LIST' + (flags.d ? ' FOR ' + flags.d : ''));
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 
 		// get database files
@@ -142,9 +142,9 @@ export default class Migration {
 			// connect DB
 			let db = Migration._connect(database);
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log(database.database + ' Migration List');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 
 			// grab all migrations
@@ -212,9 +212,9 @@ export default class Migration {
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('COMPLETE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 	}
 
@@ -233,9 +233,9 @@ export default class Migration {
 		if (flags.d && !databases.find((db) => db.database === flags.d)) return console.log(`UKNOWN DATABASE [${flags.d}] in ${config.config}\n`);
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('PREPARE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 
 		for (const database of databases) {
@@ -291,9 +291,9 @@ export default class Migration {
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('COMPLETE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 	}
 
@@ -311,9 +311,9 @@ export default class Migration {
 		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('UKNOWN DATABASE ' + flags.d);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 		}
 
@@ -323,9 +323,9 @@ export default class Migration {
 			// connect DB
 			let db = Migration._connect(database);
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('PARSE SQL on ' + database.database);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 
 			// check file not ran against db
@@ -366,9 +366,9 @@ export default class Migration {
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('COMPLETE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 	}
 
@@ -384,9 +384,9 @@ export default class Migration {
 		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('UKNOWN DATABASE ' + flags.d);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 		}
 
@@ -397,9 +397,9 @@ export default class Migration {
 			// connect DB
 			let db = Migration._connect(database);
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('UP on ' + database.database);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 
 			// grab all migrations
@@ -487,9 +487,9 @@ export default class Migration {
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('COMPLETE');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 	}
 
@@ -505,16 +505,16 @@ export default class Migration {
 		const databases = JSON.parse(fs.readFileSync(config.config));
 		if (flags.d && !databases.find((db) => db.database === flags.d)) {
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('UKNOWN DATABASE ' + flags.d);
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 		}
 
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('DOWN MIGRATION!!! ARE YOU SURE?');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 		console.log('');
 		console.log('Are you sure you want to destory ' + (flags.m ? 'migration "' + flags.m + '" ' : '') + (flags.d ? '"' + flags.d + '" database.' : 'ALL databases.'));
 		console.log('Choosing DOWN on database/s will revert them completely, ALL DATA WILL BE LOST!');
@@ -523,7 +523,7 @@ export default class Migration {
 		console.log('');
 		console.log('To cancel this operation just press enter');
 		console.log('');
-		console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+		console.log('======================================');
 
 		const capture = readline.createInterface({
 			input: process.stdin,
@@ -534,9 +534,9 @@ export default class Migration {
 			capture.close();
 
 			if (confirm !== 'yes') {
-				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('======================================');
 				console.log('Cancelled down...');
-				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('======================================');
 				return;
 			}
 
@@ -545,9 +545,9 @@ export default class Migration {
 
 				// connect DB
 				let db = Migration._connect(database);
-				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('======================================');
 				console.log('DOWN on ' + database.database);
-				console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+				console.log('======================================');
 				console.log('');
 
 				// grab all migrations
@@ -631,9 +631,9 @@ export default class Migration {
 			}
 
 			console.log('');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('COMPLETE');
-			console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
+			console.log('======================================');
 			console.log('');
 		});
 	}

@@ -25,8 +25,30 @@ export default class Tools {
 	 */
 	static run() {
 		console.log('');
+		console.log(`                                                                 `);
+		console.log(`                                                                 `);
+		console.log(`                     .'        '.                                `);
+		console.log(`                     oKo'....,xKc                                `);
+		console.log(`                    ,OMWXKKKKNMWx.                               `);
+		console.log(`                   'OWMMMMMMMMMMWk.                              `);
+		console.log(`         'ol.      .xNXNMMMMMMNXNd       .ll.                    `);
+		console.log(`       .c0WWk,.     cK0KMMMMMW00K;     .;OWWO;.                  `);
+		console.log(`   .';dO0NMMMN0o,   .OMMMMMMMMMWx.  .,dKWMMMX0ko;..              `);
+		console.log(`,okKNWMWWWMMMMMMNx'  ,OWMMMMMMWk'  ,kNMMMMMMWWWMWX0xl'           `);
+		console.log(`;KW0xxk0KXNWMMMMMMKl.,xKNMMMMN0d'.dXMMMMMMWNXKOkxx0W0,           `);
+		console.log(` ,:.    .,xNMMMMMMMWKKWNKXXXXKNWKXWMMMMMMMXd'.    .:'            `);
+		console.log(`    ....;kNMMMMMMMMMMMMMMWWWWMMMMMMMMMMMMMMNx'...                `);
+		console.log(`   .dK0O0kolookXMMMMMMMMMMMMMMMMMMMMMMXxoolok0O00l.              `);
+		console.log(`    'oo;.     .xMMMMMMMMMMMMMMMMMMMMMWo      .:oo.               `);
+		console.log(`               cXWNNWWWWWWWWWWWWWWWWWK;                          `);
+		console.log(`               .'''''''''''''''''''''.                           `);
+		console.log(`                                                                 `);
+		console.log(`                 CerberusCLI - Tools                             `);
+		console.log('');
 		console.log('======================================');
-		console.log(`CerberusCLI - Tools`);
+		console.log(`System: ${Tools.system}`);
+		console.log(`Install path: ${Tools.pid}`);
+		console.log(`Working path: ${Tools.pwd}`);
 		console.log('======================================');
 
 		return Tools.packageJSON()
