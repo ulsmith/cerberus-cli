@@ -12,7 +12,7 @@ import path from 'path';
 export default class Tools {
 
 	static get title() { return 'Tools' }
-	static get description() { return 'Iitialise a new cerberus project' }
+	static get description() { return 'Tools providing basic functionality on cerberus-cli' }
 	static get command() { return 'cerberus-cli [argument]' }
 	static get arguments() { return ['-v', '--version', '-h', '--help'] }
 

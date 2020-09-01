@@ -16,7 +16,7 @@ import Tools from './Tools.mjs';
 export default class Init {
 
 	static get title() { return 'Init' }
-	static get description() { return 'Iitialise a new cerberus project' }
+	static get description() { return 'Initialise a new cerberus project' }
 	static get command() { return 'cerberus-cli init' }
 	static get arguments() { return [] }
 
