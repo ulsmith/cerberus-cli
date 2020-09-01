@@ -71,7 +71,7 @@ export default class Tools {
 	 * @desciption Get installed directory
 	 */
 	static get pid() {
-		if (process.env.dp0) return process.env.dp0 + 'node_modules\\cerberus-cli';
+		if (process.env.APPDATA) return process.env.APPDATA + '\\npm\\node_modules\\cerberus-cli';
 		else if (process.env._) return process.env._.replace('bin/cerberus-cli', 'lib/node_modules/cerberus-cli');
 		else return '/usr/lib/node_modules/cerberus-cli';
 	}
