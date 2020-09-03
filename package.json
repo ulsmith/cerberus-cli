@@ -1,6 +1,6 @@
 {
 	"name": "cerberus-cli",
-	"version": "1.0.16",
+	"version": "1.0.17",
 	"description": "CerberusCLI is a CLI tool for cerberus-mvc; generating new projects, managing databases and more.",
 	"author": "Paul Smith",
 	"url": "https://github.com/ulsmith/cerberus-cli",
