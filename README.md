@@ -2,15 +2,21 @@
   <img width="250" height="250" src="cerberus-round-wob-500x500.png">
 </p>
 
+[CerberusMVC](https://cerberus-mvc.co.uk)
+
 # INTRO
 
 Now Support AWS and ExpressJS (with child processes)
 
 CerberusCLI is a globally installable CLI tool for working with [CerberusMVC](https://www.npmjs.com/package/cerberus-mvc), a node based MVC stack for serverless function as a service architectures.
 
-The premis for the CLI tool is to offer a few simple tools for dealing with CerberusMVC such as initialising new projects and handling things like database migrations, compatible with the database visualisation tool [DBDuck](https://dbduck.net) for visualisation and DB design.
+The premise for the CLI tool is to offer a few simple tools for dealing with CerberusMVC such as initialising new projects and handling things like database migrations, compatible with the database visualisation tool [DBDuck](https://dbduck.net) for visualisation and DB design.
 
 Want to know more, see more of CerberusMVC? We are all about MVP, we are happy to expand documentation, add in more support; let us know your thoughts... [Find me here](https://pa.ulsmith.net).
+
+# DOCUMENTATION
+
+Please visit [CerberusMVC](https://cerberus-mvc.co.uk) for details about the project and [CerberusMVC](https://cerberus-mvc.co.uk/documentation-cerberus-cli.html) for documentation.
 
 # INSTALLATION
 
@@ -23,7 +29,7 @@ npm install -g cerberus-cli
 # COMMANDS
 
 **Version**
-Shows various infomraiton on commands and such
+Shows version and install information
 
 ```bash
 cerberus-cli -v
@@ -31,7 +37,7 @@ cerberus-cli --version
 ```
 
 **Help**
-Shows various infomraiton on commands and such
+Shows various information on commands and such
 
 ```bash
 cerberus-cli -h
@@ -45,11 +51,11 @@ Initialise a new CerberusMVC project
 cerberus-cli init
 ```
 
-**Migrate**
+**Migration**
 Migrate a database in your CerberusMVC project
 
 ```bash
-cerberus-cli migrate [task] --argument value
+cerberus-cli migration [task] --argument value
 ```
 
 # INITIALISE
