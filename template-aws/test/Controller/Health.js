@@ -1,7 +1,7 @@
 var assert = require('assert');
 var request = require('supertest'); // http requests
 
-const server = 'http://localhost:3000'
+const server = 'http://localhost:3000';
 
 describe('Controller Endpoint Test [/Health]', function () {
 	describe('GET', function () {
@@ -26,20 +26,14 @@ describe('Controller Endpoint Test [/Health]', function () {
 
 				// check response type
 				assert.ok(typeof res.body === 'object' && !res.body.length);
-				assert.ok(res.body.database);
-				assert.ok(res.body.internet);
-				assert.ok(res.body.system);
+				assert.ok(res.body.name);
+				assert.ok(res.body.version);
+				assert.ok(res.body.mode);
+				assert.ok(res.body.status);
 				assert.ok(res.body.dateTime);
-				
+
 				// check response data
-				assert.equal(res.body.database[0].name, 'sourcing');
-				assert.equal(res.body.database[0].status, 'healthy');
-				assert.equal(res.body.database[1].name, 'client');
-				assert.equal(res.body.database[1].status, 'healthy');
-				assert.equal(res.body.database[2].name, 'product');
-				assert.equal(res.body.database[2].status, 'healthy');
-				assert.equal(res.body.internet, 'yes');
-				assert.equal(res.body.system, 'healthy');
+				assert.equal(res.body.status, 'healthy');
 
 				// finish
 				done();
