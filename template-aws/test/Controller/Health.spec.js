@@ -1,24 +1,25 @@
-var assert = require('assert');
-var request = require('supertest'); // http requests
+const assert = require('assert');
+const request = require('supertest');
 
-const server = 'http://localhost:8082';
+const SERVER = process.env.SERVER;
+const ORIGIN = process.env.ORIGIN;
 
 describe('Controller Endpoint Test [/Health]', function () {
 	describe('GET', function () {
 		it('Should return generic health status message', function (done) {
-			request(server)
+			request(SERVER)
 			.get('/health')
 			.send()
-			.set({'Accept': 'application/json', 'Origin': 'http://localhost'})
+			.set({'Accept': 'application/json', 'Origin': ORIGIN})
 			.end(function (err, res) {
 				// check status
 				assert.equal(res.statusCode, 200);
 
 				// check headers
-				assert.equal(res.headers['content-type'], 'application/json; charset=utf-8');
+				assert.equal(res.headers['content-type'], 'application/json');
 				assert.equal(res.headers['cache-control'], 'no-cache');
 				assert.equal(res.headers['pragma'], 'no-cache');
-				assert.equal(res.headers['access-control-allow-origin'], 'http://localhost');
+				assert.equal(res.headers['access-control-allow-origin'], ORIGIN);
 				assert.equal(res.headers['access-control-allow-credentials'], 'true');
 				assert.equal(res.headers['access-control-allow-headers'], 'Accept, Cache-Control, Content-Type, Content-Length, Authorization, Pragma, Expires');
 				assert.equal(res.headers['access-control-allow-methods'], 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
