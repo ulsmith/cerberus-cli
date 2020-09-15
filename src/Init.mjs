@@ -138,8 +138,8 @@ export default class Init {
 		// create structure from template
 		return Promise.resolve()
 			.then(() => {
-				if (Tools.system === 'windows') fsx.readJson(Tools.pid + '\\' + meta.path + '\\package.json'); 
-				else return fsx.readJson(Tools.pid  + '/' + meta.path + '/package.json');
+				if (Tools.system === 'windows') fsx.readJson(Tools.pwd + '\\' + meta.path + '\\package.json'); 
+				else return fsx.readJson(Tools.pwd  + '/' + meta.path + '/package.json');
 			})
 			.then((data) => {
 				data.name = meta.name;
@@ -151,8 +151,8 @@ export default class Init {
 				return data;
 			})
 			.then((data) => {
-				if (Tools.system === 'windows') fsx.writeJson(Tools.pid + '\\' + meta.path + '\\package.json', data, { spaces: '\t' });
-				else return fsx.writeJson(Tools.pid + '/' + meta.path + '/package.json', data, { spaces: '\t' });
+				if (Tools.system === 'windows') fsx.writeJson(Tools.pwd + '\\' + meta.path + '\\package.json', data, { spaces: '\t' });
+				else return fsx.writeJson(Tools.pwd + '/' + meta.path + '/package.json', data, { spaces: '\t' });
 			})
 			.then(() => meta);
 	}
