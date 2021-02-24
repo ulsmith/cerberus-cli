@@ -6,7 +6,7 @@
 
 # INTRO
 
-Now Support AWS and ExpressJS (with child processes)
+Now Support AWS, ExpressJS (with child processes) and Socket.IO
 
 CerberusCLI is a globally installable CLI tool for working with [CerberusMVC](https://www.npmjs.com/package/cerberus-mvc), a node based MVC stack for serverless function as a service architectures.
 
@@ -64,7 +64,7 @@ The `cerberus-cli init` command performs a new project initialisation for Cerber
 
 * Meta data collection, builds the project based on the answers.
 * Structure setup, configures the folder structure required for CerberusMVC to function.
-* Creates a project structure from a know template (AWS only supported at present, others to follow).
+* Creates a project structure from a know template (AWS, Express or Socket.IO).
 * Configures a package.json file with required information for the node project.
 * Configures a template.yaml file for AWS SAM (AWS architectures only).
 * Configures a swagger.json file for local swagger docker container (requires docker/docker-compose).

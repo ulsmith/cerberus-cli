@@ -81,7 +81,7 @@ export default class Init {
 
 		return new Promise((res) => capture.question(`Project title: `, (title) => res({title: title})))
 			.then((data) => new Promise((res) => capture.question(`Project name (a-z, 0-9, - and _ only): `, (name) => res({ ...data, name: name }))))
-			.then((data) => new Promise((res) => capture.question(`Project type, default: aws (options: aws, express): `, (type) => res({ ...data, type: type }))))
+			.then((data) => new Promise((res) => capture.question(`Project type, default: aws (options: aws, express, socket): `, (type) => res({ ...data, type: type }))))
 			.then((data) => new Promise((res) => capture.question(`Your name (author): `, (author) => res({ ...data, author: author }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Root folder/dir name (leave blank to use project name): `, (folder) => res({ ...data, folder: folder }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Description of project: `, (description) => res({ ...data, description: description }))))
@@ -95,7 +95,7 @@ export default class Init {
 				if (!/^[a-z0-9-_]+$/.test(data.name)) throw Error(`Project name must be in the form of 'test-name_0123'.`);
 				data.private = !data.private || data.private.toLowerCase() == 'yes' ? true : false; 
 				if (!data.node) data.node = '>=13.0'; 
-				if (['aws', 'express'].indexOf(data.type) < 0) throw Error(`Project type must be one of available options [aws, express].`);
+				if (['aws', 'express', 'socket'].indexOf(data.type) < 0) throw Error(`Project type must be one of available options [aws, express].`);
 				if (!data.title || !data.name || !data.author) throw Error(`Must include title, name, type and author.`);
 				
 				return data;
@@ -173,7 +173,7 @@ export default class Init {
 				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.yaml` : `/${meta.path}/template.yaml`), from: '<meta.title>', to: meta.title }))
 				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\template.yaml` : `/${meta.path}/template.yaml`), from: '<meta.description>', to: meta.description }))
 				.then(() => meta);
-		} else if (meta.type === 'express') {
+		} else if (meta.type === 'express' || meta.type === 'socket') {
 			console.log('Updating template.json...');
 	
 			// create structure from template
@@ -195,21 +195,25 @@ export default class Init {
 	 * @return {Object} Meta data object
 	 */
 	static swaggerJSON(meta) {
-		console.log('Updating swagger.json...');
+		if (meta.type === 'aws' || meta.type === 'express') {
+			console.log('Updating swagger.json...');
 
-		// create structure from template
-		return Promise.resolve()
-			.then(() => fsx.readJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`)))
-			.then((data) => {
-				data.info.title = meta.title;
-				data.info.description = meta.description;
-				data.info.contact.name = meta.author;
-				data.info.license.name = meta.license;
-				data.servers[0].url = meta.type === 'aws' ? 'http://localhost:3000' : '';
-				return data;
-			})
-			.then((data) => fsx.writeJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`), data, { spaces: '\t' }))
-			.then(() => meta);
+			// create structure from template
+			return Promise.resolve()
+				.then(() => fsx.readJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`)))
+				.then((data) => {
+					data.info.title = meta.title;
+					data.info.description = meta.description;
+					data.info.contact.name = meta.author;
+					data.info.license.name = meta.license;
+					data.servers[0].url = meta.type === 'aws' ? 'http://localhost:3000' : '';
+					return data;
+				})
+				.then((data) => fsx.writeJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`), data, { spaces: '\t' }))
+				.then(() => meta);
+			} else {
+				return Promise.resolve().then(() => meta);
+			}
 	}
 
 	/**
@@ -219,14 +223,18 @@ export default class Init {
 	 * @return {Object} Meta data object
 	 */
 	static dockerComposeYAML(meta) {
-		console.log('Updating docker-compose.yaml...');
+		if (meta.type === 'aws' || meta.type === 'express') {
+			console.log('Updating docker-compose.yaml...');
 		
-		// create structure from template
-		return Promise.resolve()
-			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.name>', to: meta.name }))
-			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.title>', to: meta.title }))
-			.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.description>', to: meta.description }))
-			.then(() => meta);
+			// create structure from template
+			return Promise.resolve()
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.name>', to: meta.name }))
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.title>', to: meta.title }))
+				.then(() => replace({ files: Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\docker-compose.yaml` : `/${meta.path}/docker-compose.yaml`), from: '<meta.description>', to: meta.description }))
+				.then(() => meta);
+		} else {
+			return Promise.resolve().then(() => meta);
+		}
 	}
 
 	/**
