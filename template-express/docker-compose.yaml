@@ -7,6 +7,6 @@ services:
     networks:
       - default
     volumes:
-      - ${PWD}/swagger.json:/mnt/swagger.json
+      - ./swagger.json:/mnt/swagger.json
     ports:
       - 8181:8080

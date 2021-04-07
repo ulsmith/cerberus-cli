@@ -206,7 +206,6 @@ export default class Init {
 					data.info.description = meta.description;
 					data.info.contact.name = meta.author;
 					data.info.license.name = meta.license;
-					data.servers[0].url = meta.type === 'aws' ? 'http://localhost:3000' : '';
 					return data;
 				})
 				.then((data) => fsx.writeJson(Tools.pwd + (Tools.system === 'windows' ? `\\${meta.path}\\swagger.json` : `/${meta.path}/swagger.json`), data, { spaces: '\t' }))
