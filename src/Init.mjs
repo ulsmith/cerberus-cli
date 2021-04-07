@@ -138,7 +138,7 @@ export default class Init {
 		// create structure from template
 		return Promise.resolve()
 			.then(() => {
-				if (Tools.system === 'windows') fsx.readJson(Tools.pwd + '\\' + meta.path + '\\package.json'); 
+				if (Tools.system === 'windows') return fsx.readJson(Tools.pwd + '\\' + meta.path + '\\package.json'); 
 				else return fsx.readJson(Tools.pwd  + '/' + meta.path + '/package.json');
 			})
 			.then((data) => {
