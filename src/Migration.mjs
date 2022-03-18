@@ -84,29 +84,12 @@ export default class Migration {
 
 			// test connection with a query
 			await db.raw('SELECT now()')
-				.then(() => console.log('...Database (' + database.engine + ') ' + database.database + ' on ' + database.host + ' port ' + database.port + ' is healthy'))
-				.catch(() => console.log('...ERROR: Database (' + database.engine + ') ' + database.database + ' on ' + database.host + ' port ' + database.port + ' is not reachable'));
-
-			db.destroy();
-		}
-
-		let ran = [];
-		for await (const database of databases) {
-			if (ran.indexOf(database.host + database.port) >= 0) continue;
-			ran.push(database.host + database.port);
-			let db = Migration._connect(database);
-
-			// test connection with a query
-			await db.raw('SELECT * from pg_stat_activity').then((data) => {
-					console.log('');
-					console.log(('--- Process List for ' + database.host + ' port ' + database.port + ' ---').replace(/./g, '-'))
-					console.log('--- Process List for ' + database.host + ' port ' + database.port + ' ---');
-					console.log(('--- Process List for ' + database.host + ' port ' + database.port + ' ---').replace(/./g, '-'))
-					for (const row of data.rows) console.log(`PID:${row.pid} - DBID:${row.datid} - DBNAME:${row.datname} - UNAME:${row.usename} - APPNAME:${row.application_name} CADDR:${row.client_addr}`);
-					console.log(('--- Process List for ' + database.host + ' port ' + database.port + ' ---').replace(/./g, '-'))
-					console.log('');
-				})
-				.catch(() => console.log('...ERROR: Connecting to ' + database.host + ' port ' + database.port));
+			.then(() => console.log('...Database (' + database.engine + ') ' + database.database + ' on ' + database.host + ' port ' + database.port + ' is healthy'))
+			.catch((e) => { 
+					console.log(99);
+				console.log(e);	
+					console.log('...ERROR: Database (' + database.engine + ') ' + database.database + ' on ' + database.host + ' port ' + database.port + ' is not reachable')
+				});
 
 			db.destroy();
 		}
@@ -165,10 +148,8 @@ export default class Migration {
 
 						// check timestamp and database name
 						try {
-							const dbName = fdMeta.match("-- @database (.*)")[1];
 							const dbTimestamp = fdMeta.match("-- @timestamp (.*)")[1];
 							if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
-							if (database.database !== dbName) continue;
 							if (file.indexOf(dbTimestamp) < 0) throw Error('Timestamp missmatch between filename and file meta data [' + file + ']');
 						} catch (error) {
 							if (error.message) console.log(error.message);
@@ -262,13 +243,11 @@ export default class Migration {
 					
 					// update file and rename too
 					const text = fs.readFileSync(file, 'utf8');
-		
+
 					// check we have a database, up, down and begin commit in file
 					try {
-						const dbName = text.match("-- @database (.*)");
 						const dbUp = text.match("-- @up");
 						const dbDown = text.match("-- @down");
-						if (!dbName || dbName[1].length < 2) throw Error('Cannot resolve database name in file [' + file + ']');
 						if (!dbUp || dbUp[0] !== '-- @up') throw Error('Cannot find \'-- @up\' section in migrate file [' + file + ']');
 						if (!dbDown || dbDown[0] !== '-- @down') throw Error('Cannot find \'-- @down\' section in migrate file [' + file + ']');
 					} catch (error) {
@@ -334,15 +313,13 @@ export default class Migration {
 			const fdParse = fd.split('-- @parse')[1];
 
 			// check timestamp and database name
-			let dbName, mgName;
+			let mgName;
 			try {
-				dbName = fdMeta.match("-- @database (.*)")[1];
 				mgName = fdMeta.match("-- @name (.*)")[1];
 				if (!database.database) throw Error('Cannot resolve database name in file [' + flags.f + ']');
-				if (database.database !== dbName) throw Error('Cannot parse SQL against "' + database.database + '" database name in file is "' + dbName + '"');
 				if (!mgName) throw Error('Cannot resolve migration name in file [' + flags.f + ']');
 			} catch (error) {
-				if (!dbName || !mgName) console.log('Meta data missing from parsable file');
+				if (!mgName) console.log('Meta data missing from parsable file');
 				else if (error.message) console.log(error.message);
 				throw Error('Undefined error'); // only allow from or to with flags.d
 			}
@@ -415,13 +392,11 @@ export default class Migration {
 					const fdDown = fd.split('-- @up')[1].split('-- @down')[1];
 
 					// check timestamp and database name
-					let dbName, dbTimestamp, mgName;
+					let dbTimestamp, mgName;
 					try {
-						dbName = fdMeta.match("-- @database (.*)")[1];
 						dbTimestamp = fdMeta.match("-- @timestamp (.*)")[1];
 						mgName = fdMeta.match("-- @name (.*)")[1];
 						if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
-						if (database.database !== dbName) continue;
 						if (file.indexOf(dbTimestamp) < 0) throw Error('Timestamp missmatch between filename and file meta data [' + file + ']');
 						if (!mgName) throw Error('Cannot migration name in file [' + file + ']');
 					} catch (error) {
@@ -457,7 +432,7 @@ export default class Migration {
 							if (Number(dbTimestamp) < from || Number(dbTimestamp) > to) continue;
 						}
 					}
-					
+
 					let row;
 					try {
 						row = data.find((row) => row.name_unique === file.split(/\\|\//).pop());
@@ -562,13 +537,11 @@ export default class Migration {
 						const fdDown = fd.split('-- @up')[1].split('-- @down')[1];
 
 						// check timestamp and database name
-						let dbName, dbTimestamp, mgName;
+						let dbTimestamp, mgName;
 						try {
-							dbName = fdMeta.match("-- @database (.*)")[1];
 							dbTimestamp = fdMeta.match("-- @timestamp (.*)")[1];
 							mgName = fdMeta.match("-- @name (.*)")[1];
 							if (!database.database) throw Error('Cannot resolve database name in file [' + file + ']');
-							if (database.database !== dbName) continue;
 							if (file.indexOf(dbTimestamp) < 0) throw Error('Timestamp missmatch between filename and file meta data [' + file + ']');
 							if (!mgName) throw Error('Cannot migration name in file [' + file + ']');
 						} catch (error) {
@@ -618,7 +591,7 @@ export default class Migration {
 							console.log('...Completed DOWN of migration file [' + file + ']');
 							await db(database.table).update({ completed: null, data: JSON.stringify({ action: 'down', sql: fdDown, meta: fdMeta }) }).where({ name_unique: file.split(/\\|\//).pop() });
 						} catch (error) {
-							if (error.message.indexOf('relation "' + database.table + '" does not exist') < 0) {
+							if (error.message.indexOf('relation "' + database.table + '" does not exist') < 0 && (error.message.indexOf(database.table) < 0 && error.message.indexOf('doesn\'t exist') < 0)) {
 								console.log('Error with message: ' + error.message);
 								console.log('NOTE: Cannot bring down migration, please handle manually for file [' + file + ']');
 							} else {
