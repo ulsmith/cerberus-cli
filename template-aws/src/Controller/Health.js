@@ -26,16 +26,15 @@ class Health extends Controller {
 	 * @desciption Get the access for methods. All methods are restricted by default unless specifically set as 'public'.
 	 * @return {Object} Object of access levels for methods
 	 */
-    static get get() { return 'public' }
+	static get get() { return { level: 'public' } }
 
     /**
      * @public @method get
      * @description Ping the system to check whats health and whats not
-     * @param {*} event The event that caused the controller to run
-     * @param {*} context The context of the invocation from AWS lambda
+     * @param {*} request The request that caused the controller to run
      * @return Promise a response promise resolved or rejected with a raw payload or {status: ..., data: ..., headers: ...} payload
      */
-	get(event, context) {
+	get(request) {
 		return {
 			name: this.$environment.API_NAME,
 			version: this.$environment.API_VERSION,
