@@ -85,14 +85,14 @@ export default class Init {
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Description of project: `, (description) => res({ ...data, description: description }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Project license: `, (license) => res({ ...data, license: license }))))
 			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Is project private, default: yes: `, (pp) => res({ ...data, private: pp }))))
-			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Node version, default: >=13.0: `, (node) => res({ ...data, node: node }))))
+			.then((data) => new Promise((res) => capture.question(`[OPTIONAL] Node version, default: >=18.0: `, (node) => res({ ...data, node: node }))))
 			.then((data) => {
 				capture.close()
 
 				if (!data.type) data.type = 'aws'; 
 				if (!/^[a-z0-9-_]+$/.test(data.name)) throw Error(`Project name must be in the form of 'test-name_0123'.`);
 				data.private = !data.private || data.private.toLowerCase() == 'yes' ? true : false; 
-				if (!data.node) data.node = '>=13.0'; 
+				if (!data.node) data.node = '>=18.0'; 
 				if (['aws', 'azure', 'express', 'socket'].indexOf(data.type) < 0) throw Error(`Project type must be one of available options [aws, azure, express, socket].`);
 				if (!data.title || !data.name || !data.author) throw Error(`Must include title, name, type and author.`);
 				
@@ -145,6 +145,8 @@ export default class Init {
 				data.author = meta.author;
 				data.license = meta.license;
 				data.private = !!meta.private;
+				data.engines.node = meta.node;
+
 				if (data.scripts && data.scripts.deploy) data.scripts.deploy = data.scripts.deploy.replace('<meta.name>', meta.name);
 				return data;
 			})
