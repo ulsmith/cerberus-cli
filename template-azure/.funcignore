@@ -1,0 +1,11 @@
+.git/*
+.vscode/*
+.github/*
+.devcontainer/*
+.azdo/*
+
+test/*
+infra/*
+
+*.md
+package-lock.json
