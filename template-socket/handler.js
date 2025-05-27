@@ -19,14 +19,14 @@ io.on('connection', (socket) => {
 	socket.onAny((route, data) => {
 		console.log(route, data);
 
-		const app = new Application('socket');
-		// const authService = new AuthService(); // add in your service
-		// const authMiddleware = new AuthMiddleware(); // add in your middleware
+		const app = new Application({ route, data, socket, io }, 'socket');
+		// const authService = new AuthService(app.globals); // add in your service
+		// const authMiddleware = new AuthMiddleware(app.globals); // add in your middleware
 
 		// app.service(authService); // add in your service
 		// app.middleware(authMiddleware); // add in your middleware
 
-		app.run({ route, data, socket, io });
+		app.run();
 	});
 });
 

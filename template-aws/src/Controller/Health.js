@@ -12,15 +12,6 @@ const Controller = require('cerberus-mvc/Base/Controller');
  * @license MIT
  */
 class Health extends Controller {
-
-	/**
-	 * @public @method constructor
-	 * @description Base method when instantiating class
-	 */
-    constructor() {
-        super();
-    }
-
 	/**
 	 * @public @static @get access
 	 * @desciption Get the access for methods. All methods are restricted by default unless specifically set as 'public'.

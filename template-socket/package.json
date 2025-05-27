@@ -2,7 +2,7 @@
 	"name": "my-cerberus-mvc-api",
 	"version": "0.0.1",
 	"description": "My cerberus MVC stack API",
-	"author": "Jonny Bee",
+	"author": "Your Name",
 	"license": "MIT",
 	"private": true,
 	"scripts": {
@@ -11,19 +11,19 @@
 		"test": "env SERVER=http://localhost:8082 ORIGIN=http://localhost mocha test --recursive"
 	},
 	"dependencies": {
-		"body-parser": "^1.19.0",
-		"cerberus-mvc": "^1.2.1",
+		"body-parser": "^1.20.2",
+		"cerberus-mvc": "^4.0.1",
 		"cluster": "^0.7.7",
-		"express": "^4.17.1",
-		"request-ip": "^2.1.3",
-		"socket.io": "^3.1.1"
+		"express": "^4.18.3",
+		"request-ip": "^3.3.0",
+		"socket.io": "^4.8.1"
 	},
 	"devDependencies": {
-		"mocha": "^8.1.3",
-		"supertest": "^4.0.2"
+		"mocha": "^11.5.0",
+		"supertest": "^7.1.1"
 	},
 	"engines": {
-		"node": ">=12.0"
+		"node": ">=23.9.0"
 	},
 	"mocha": {
 		"diff": true,

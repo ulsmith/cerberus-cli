@@ -28,16 +28,16 @@ function process() {
 	server.use(bodyParser.json())
 
 	server.use('/', (req, res) => {
-		let app = new Application('express');
-		let corsMiddleware = new CorsMiddleware();
-		let knexMiddleware = new KnexMiddleware();
+		let app = new Application(req, 'express');
+		let corsMiddleware = new CorsMiddleware(app.globals);
+		let knexMiddleware = new KnexMiddleware(app.globals);
 		let yourDBKnexService = new KnexService('postgres', '192.168.1.10', 5432, 'your_db', 'your_user', 'your_password');
 
 		app.service(yourDBKnexService);
 		app.middleware(corsMiddleware);
 		app.middleware(knexMiddleware);
 
-		return app.run(req).then((response) => res.set(response.headers).status(response.status).send(response.body));
+		return app.run().then((response) => res.set(response.headers).status(response.status).send(response.body));
 	});
 
 	// Start

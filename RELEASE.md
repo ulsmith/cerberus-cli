@@ -1,5 +1,9 @@
 # RELEASE
 
+## 1.1.2
+
+Updated to Cerberus MVC V4
+
 ## 1.1.1
 
 Typo in questions, default is now 18 and above for node version
